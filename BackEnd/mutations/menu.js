@@ -56,5 +56,5 @@
 //     }
 // };
 
-// exports.addMenuSection = addMenuSection;
-// exports.addMenuItem = addMenuItem;
+// exports.updateDish = updateDish;
+// exports.addDish = addDish;

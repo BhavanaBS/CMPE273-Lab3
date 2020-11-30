@@ -1,9 +1,15 @@
 const graphql = require('graphql');
-const User = require("../dbSchema/users");
-const { login } = require('../mutations/login');
-const { customerSignup, ownerSignup } = require('../mutations/signup');
-const { updateCustomer, updateOwner } = require('../mutations/profile');
-const { addMenuSection, addMenuItem } = require('../mutations/menu');
+
+const Customer = require("../dbSchema/cust_profile");
+const Restaurant = require("../dbSchema/rest_profile");
+const Order = require("../dbSchema/order");
+
+const { customerLogin, restaurantLogin } = require('../mutations/login');
+const { customerSignup, restaurantSignup } = require('../mutations/signup');
+const { updateCustomer, updateRestaurant } = require('../mutations/profile');
+const { addDish, updateDish } = require('../mutations/dishes');
+const { createOrder, updateOrder } = require('../mutations/dishes');
+const { addReview } = require('../mutations/reviews');
 
 const {
     GraphQLObjectType,
@@ -15,16 +21,25 @@ const {
     GraphQLNonNull
 } = graphql;
 
-const UserType = new GraphQLObjectType({
-    name: 'User',
+const CustomerType = new GraphQLObjectType({
+    name: 'Customer',
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
         email_id: { type: GraphQLString },
         password: { type: GraphQLString },
         address: { type: GraphQLString },
-        phone_number: { type: GraphQLString },
-        restaurant: { type: RestaurantType }
+        phone: { type: GraphQLString },
+        dob: { type: GraphQLString },
+        city: { type: GraphQLString },
+        state: { type: GraphQLString },
+        country: { type: GraphQLString },
+        nick_name: { type: GraphQLString },
+        about: { type: GraphQLString },
+        join_date: { type: GraphQLString },
+        favourite_restaurant: { type: GraphQLString },
+        favourite_hobby: { type: GraphQLString },
+        blog_url: { type: GraphQLString }
     })
 });
 
@@ -32,42 +47,75 @@ const RestaurantType = new GraphQLObjectType({
     name: 'Restaurant',
     fields: () => ({
         id: { type: GraphQLID },
-        res_name: { type: GraphQLString },
-        res_cuisine: { type: GraphQLString },
-        res_zip_code: { type: GraphQLString },
-        res_address: { type: GraphQLString },
-        res_phone_number: { type: GraphQLString },
-        owner_user_id: { type: GraphQLID },
-        menu_sections: {
-            type: new GraphQLList(MenuSectionType),
+        name: { type: GraphQLString },
+        email_id: { type: GraphQLString },
+        password: { type: GraphQLString },
+        location: { type: GraphQLString },
+        phone: { type: GraphQLString },
+        description: { type: GraphQLString },
+        timings: { type: GraphQLString },
+        cuisine: { type: GraphQLString },
+        delivery_method: { type: GraphQLString },
+        rest_dishes: {
+            type: new GraphQLList(RestDishType),
             resolve(parent, args) {
-                return parent.menu_sections;
+                return parent.rest_dishes;
+            }
+        },
+        reviews: {
+            type: new GraphQLList(ReviewType),
+            resolve(parent, args) {
+                return parent.reviews;
             }
         }
     })
 });
 
-const MenuSectionType = new GraphQLObjectType({
-    name: 'Menu_Section',
-    fields: () => ({
-        _id: { type: GraphQLID },
-        menu_section_name: { type: GraphQLString },
-        menu_items: {
-            type: new GraphQLList(MenuItemType),
-            resolve(parent, args) {
-                return parent.menu_items;
-            }
-        }
-    })
-});
-
-const MenuItemType = new GraphQLObjectType({
-    name: 'Menu_Item',
+const ReviewType = new GraphQLObjectType({
+    name: 'Review',
     fields: () => ({
         id: { type: GraphQLID },
-        item_name: { type: GraphQLString },
-        item_description: { type: GraphQLString },
-        item_price: { type: GraphQLInt }
+        rating: { type: GraphQLInt },
+        review: { type: GraphQLString },
+        create_time: { type: GraphQLString }
+    })
+});
+
+// not sure about orderType
+const OrderType = new GraphQLObjectType({
+    name: 'Order',
+    fields: () => ({
+        id: { type: GraphQLID },
+        status: { type: GraphQLString },
+        create_time: { type: GraphQLString },
+        delivery_method: { type: GraphQLString },
+        dish_name: { type: GraphQLString },
+        quantity: { type: GraphQLInt },
+        delivery_method: { type: GraphQLString },
+        restaurant: { 
+            type: RestaurantType,
+            resolve(parent, args) {
+                return Restaurant.find(restaurant => restaurant.id === parent._id);
+            }
+         },
+        customer_id: {
+            type: CustomerType,
+            resolve(parent, args) {
+                return Customer.find(customer => customer.id === parent._id);
+            }
+        }
+    })
+});
+
+const RestDishType = new GraphQLObjectType({
+    name: 'RestDish',
+    fields: () => ({
+        id: { type: GraphQLID },
+        name: { type: GraphQLString },
+        ingredients: { type: GraphQLString },
+        price: { type: GraphQLInt },
+        category: { type: GraphQLString },
+        description: { type: GraphQLString }
     })
 });
 

@@ -13,7 +13,7 @@ const custProfileSchema = new Schema({
   country: { type: String, default: null },
   nick_name: { type: String, default: null },
   about: { type: String, default: null },
-  join_date: { type: Date, default: Date.now() },
+  join_date: { type: String, default: null },
   favourite_restaurant: { type: String, default: null },
   favourite_hobby: { type: String, default: null },
   blog_url: { type: String, default: null },

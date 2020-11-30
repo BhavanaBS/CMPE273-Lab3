@@ -4,7 +4,7 @@ const schema = require('./schema/schema');
 const cors = require('cors');
 const app = express();
 const mongoose = require('mongoose');
-const { mongoDB } = require('./config');
+const { mongoDB } = require('./config/config');
 
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 
@@ -34,7 +34,7 @@ mongoose.connect(mongoDB, options, (err, res) => {
     }
 });
 
-app.use("/graphql",graphqlHTTP({
+app.use("/yelp",graphqlHTTP({
     schema,
     graphiql: true
 }));

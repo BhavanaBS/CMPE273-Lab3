@@ -5,7 +5,7 @@ const passwordHash = require('password-hash');
 const restaurantSignup = async (args) => {
     let hashedPassword = passwordHash.generate(args.password);
 
-    let newRestaurant = new User({
+    let newRestaurant = new Restaurant({
         name: args.name,
         email_id: args.email_id,
         password: hashedPassword,
@@ -28,7 +28,7 @@ const restaurantSignup = async (args) => {
 const customerSignup = async (args) => {
     let hashedPassword = passwordHash.generate(args.password);
 
-    let newCustomer = new User({
+    let newCustomer = new Customer({
         name: args.name,
         email_id: args.email_id,
         password: hashedPassword,

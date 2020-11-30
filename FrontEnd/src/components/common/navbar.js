@@ -1,9 +1,5 @@
 import React,{Component} from 'react';
 import {Link} from 'react-router-dom';
-import cookie from 'react-cookies';
-import {Redirect} from 'react-router';
-import { connect } from 'react-redux';
-import { logout } from '../../redux/action/commonActions'
 import '../../App.css';
 import { Navbar, Nav, Dropdown } from 'react-bootstrap';
 import logo from '../../images/yelp_logo.png';
@@ -15,22 +11,18 @@ class HeaderNavbar extends Component {
     }
     //handle logout to destroy the cookie
     handleLogout = () => {
-        cookie.remove('cookie', { path: '/' })
         window.localStorage.clear();
-        this.props.logout();
-    }
+    };
 
     render(){
 
         //if Cookie is set render Logout Button
         let navOptions = null;
 
-        if(cookie.load('cookie')){
-
-            console.log("I am in Navbar. I am Able to read cookie.");
-
+        if (localStorage.getItem("token")) {
+            console.log("I am in Navbar. I have a JWT Token.");
             var id;
-            if(localStorage.getItem("customer_id")) {
+            if (localStorage.getItem("customer_id")) {
                 console.log('Local Storage Value of Customer: ',localStorage.getItem("customer_id"));
                 id  = localStorage.getItem("customer_id");
             }
@@ -53,7 +45,6 @@ class HeaderNavbar extends Component {
                                 <Dropdown.Menu>
                                     <Dropdown.Item><Link to="/r_profile">Profile</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/r_menu/view">Menu</Link></Dropdown.Item>
-                                    <Dropdown.Item><Link to="/r_events/view">Events</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/r_orders">Orders</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/r_reviews">Reviews</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/" onClick = {this.handleLogout}>Logout</Link></Dropdown.Item>
@@ -77,7 +68,6 @@ class HeaderNavbar extends Component {
                                     <Dropdown.Item><Link to="/c_profile">Profile</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/c_cart">Cart</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/c_orders">Order History</Link></Dropdown.Item>
-                                    <Dropdown.Item><Link to="/c_events/view">Events</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/" onClick = {this.handleLogout}>Logout</Link></Dropdown.Item>
                                 </Dropdown.Menu>
                             </Dropdown>
@@ -88,7 +78,6 @@ class HeaderNavbar extends Component {
         } else{
             //Else display login button
             this.handleLogout();
-            console.log("I am in Navbar. I am Not Able to read cookie.");
             navOptions = (
                 <div class="collapse navbar-collapse navbar-right" id="navbarNav">
             <Nav className="mr-auto">
@@ -105,21 +94,11 @@ class HeaderNavbar extends Component {
             </Nav.Link>
 
           </div>
-                // <ul class="nav navbar-nav navbar-right">
-                //         <li><Link class= "btn btn-primary" to="/c_login"><span class="glyphicon glyphicon-log-in"></span> Log In</Link></li>
-                //         <li><Link class= "btn btn-primary" to="/r_login"><span class="glyphicon glyphicon-log-in"></span> Business Log In</Link></li>
-                //         <li><Link class= "btn btn-primary" to="/c_signup">SignUp</Link></li>
-                // </ul>
-
             )
         }
-        let redirectVar = null;
-        if(!cookie.load('cookie')) {
-            redirectVar = <Redirect to="/home"/>
-        }
+
         return(
             <div>
-            {redirectVar}
             <Navbar bg="light" variant="light">    
                 <Navbar.Brand>
                     <img src={logo} width="100" height="auto" class="d-inline-block align-top" alt="Yelp" />
@@ -131,4 +110,4 @@ class HeaderNavbar extends Component {
     }
 }
 
-export default connect(null, { logout }) (HeaderNavbar);
+export default HeaderNavbar;

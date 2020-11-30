@@ -1,24 +1,25 @@
-import React, { Component } from 'react';
-import './App.css';
-import Main from './components/Main';
-import {BrowserRouter} from 'react-router-dom';
-import store from "./redux/store/store"
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import Main from './components/Main.js'
+import ApolloClient from 'apollo-boost';
+import { ApolloProvider } from 'react-apollo';
+import backend from './components/common/serverDetails';
 
-import { Provider } from "react-redux";
+// apollo client setup
+const client = new ApolloClient({
+  uri: `${backend}/yelp`
+});
 
-//App Component
-class App extends Component {
-  render() {
-    return (
-      <Provider store={store}>
+function App() {
+  return (
+    <ApolloProvider client={client}>
         <div>
           <BrowserRouter>
             <Main />
           </BrowserRouter>
         </div>
-      </Provider>
-    );
-  }
+    </ApolloProvider>
+  );
 }
 
 export default App;

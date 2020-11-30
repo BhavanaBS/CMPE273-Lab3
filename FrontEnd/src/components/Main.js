@@ -30,7 +30,7 @@ class Main extends Component {
 
                 <Route path="/c_login" component={customerLogin}/>
                 <Route path="/c_signup" component={customerSignup}/>
-                <Route path="/customer/home" component={customerHome}/>
+                <Route path="/c_home" component={customerHome}/>
                 <Route path="/c_profile" component={customerProfile}/>
                 <Route path="/c_orders" component={customerOrders}/>
                 <Route path="/customer/restaurant/*" component={restaurantViewPage}/>

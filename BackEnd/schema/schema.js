@@ -5,7 +5,7 @@
 //
 // Pending Routes
 //
-// CustomerRestaurantPage - Search, restaurant_detail
+// CustomerRestaurantPage - restaurant_detail
 // Orders - rest_orders_put, cust_orders_post
 // Dishes - dish_create, dish_edit, dish_get_perticular
 
@@ -19,7 +19,7 @@ const { customerLogin, restaurantLogin } = require('../mutations/login');
 const { customerSignup, restaurantSignup } = require('../mutations/signup');
 const { customerUpdate, restaurantUpdate } = require('../mutations/profile');
 // const { addDish, updateDish } = require('../mutations/menu');
-// const { createOrder, updateOrder } = require('../mutations/dishes');
+const { createOrder, updateOrder } = require('../mutations/orders');
 const { addReview } = require('../mutations/reviews');
 
 const {
@@ -113,18 +113,21 @@ const OrderType = new GraphQLObjectType({
     delivery_method: { type: GraphQLString },
     dish_name: { type: GraphQLString },
     quantity: { type: GraphQLInt },
-    restaurant: {
-      type: RestaurantType,
-      resolve(parent, args) {
-        return Restaurant.find((restaurant) => restaurant.id === parent._id);
-      },
-    },
-    customer: {
-      type: CustomerType,
-      resolve(parent, args) {
-        return Customer.find((customer) => customer.id === parent._id);
-      },
-    },
+    restaurant_id: { type: GraphQLID },
+    customer_id: { type: GraphQLID },
+    restaurant_name: { type: GraphQLString },
+    // restaurant: {
+    //   type: RestaurantType,
+    //   resolve(parent, args) {
+    //     return Restaurant.find((restaurant) => restaurant.id === parent._id);
+    //   },
+    // },
+    // customer: {
+    //   type: CustomerType,
+    //   resolve(parent, args) {
+    //     return Customer.find((customer) => customer.id === parent._id);
+    //   },
+    // },
   }),
 });
 
@@ -166,7 +169,6 @@ const RootQuery = new GraphQLObjectType({
       async resolve(parent, args) {
         const restaurants = await Restaurant.find({name: {$regex :args.input}});
         // const restaurants = await Restaurant.find();
-
         if (restaurants) {
           return restaurants;
         }
@@ -318,6 +320,32 @@ const Mutation = new GraphQLObjectType({
       },
       resolve(parent, args) {
         return restaurantUpdate(args);
+      },
+    },
+
+    createOrder: {
+      type: StatusType,
+      args: {
+        customer_id: { type: GraphQLString },
+        restaurant_id: { type: GraphQLString },
+        delivery_method: { type: GraphQLString },
+        dish_name: { type: GraphQLString },
+        quantity: { type: GraphQLInt },
+        restaurant_name: { type: GraphQLString }
+      },
+      async resolve(parent, args) {
+        return createOrder(args);
+      },
+    },
+
+    updateOrder: {
+      type: StatusType,
+      args: {
+        order_id: { type: GraphQLString },
+        status: { type: GraphQLString },
+      },
+      async resolve(parent, args) {
+        return updateOrder(args);
       },
     },
 

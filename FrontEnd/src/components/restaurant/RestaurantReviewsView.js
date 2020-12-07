@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
-import axios from 'axios';
 
 class RestaurantReviewsView extends Component {
 
@@ -14,26 +13,7 @@ class RestaurantReviewsView extends Component {
 
     getReviews = () => {
         let rest_id = localStorage.getItem("restaurant_id");
-        axios.get(`/restaurants/${rest_id}/reviews`)
-            .then(response => {
-                console.log("RESPONSE for reviews",response.data);
-                if (response.data[0]) {
-                    this.setState({
-                        reviews: response.data
-                    });
-                } else {
-                    this.setState({
-                        errorFlag: true,
-                    })
-                }
-            })
-            .catch(err => {
-                if (err.response && err.response.data) {
-                    this.setState({
-                        errorFlag: true,
-                    })
-                }
-            });
+        
     };
 
     getLocaleTime = (create_time) => {

@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import { Container, Alert } from "react-bootstrap";
 import Dish from "./Dish";
-import backend from '../common/serverDetails';
 
 class RestaurantMenuView extends Component {
     constructor(props) {
@@ -21,49 +19,8 @@ class RestaurantMenuView extends Component {
 
     getDishes = () => {
         let rest_id = localStorage.getItem("restaurant_id");
-        axios.get(`${backend}/restaurants/${rest_id}/dishes`)
-            .then(response => {
-                if (response.data[0]) {
-                    this.setState({
-                        dishes: response.data
-                    });
-                }
-            })
-            .catch(err => {
-                if (err.response && err.response.data) {
-                    this.setState({
-                        message: "Error Fetching Dishes",
-                    });
-                }
-            });
-    };
-
-    deleteDish = (e) => {
-        const data = {
-            id: e.target.name,
-        };
-        let rest_id = localStorage.getItem("restaurant_id");
-        axios.delete(`${backend}/restaurants/${rest_id}/dishes/${e.target.name}`)
-            .then(response => {
-                let new_dishes = this.state.dishes;
-                let index = new_dishes.map(dish => dish.id).indexOf(parseInt(data.id));
-                if (index > -1) {
-                    new_dishes.splice(index, 1);
-                }
-                let messageToShow = "Successfully deleted the Dish";
-                this.setState({
-                    dishes: new_dishes,
-                    message: messageToShow
-                });
-            })
-            .catch(err => {
-                if (err.response && err.response.data) {
-                    this.setState({
-                        message: "Error deleting the dish",
-                    });
-                }
-            });
-
+        
+        
     };
 
     dishesView = (category) => {
@@ -74,7 +31,7 @@ class RestaurantMenuView extends Component {
                 categoryHtml = <h3><br/>{category}</h3>;
                 categoriesView.push(categoryHtml);
                 for (var i = 0; i < dishes.length; i++) {
-                    dish = <Dish dish={dishes[i]} deleteDish={this.deleteDish}/>;
+                    dish = <Dish dish={dishes[i]}/>;
                     categoriesView.push(dish);
                 }
             }

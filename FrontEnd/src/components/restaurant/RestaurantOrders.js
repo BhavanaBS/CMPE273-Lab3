@@ -1,17 +1,8 @@
-// View list of orders by customers
-// 2. Click and view profile page of each customer
-// 3. Update the delivery status of each order – Order Received, Preparing,
-// (If Delivery option selected) On the way, Delivered
-// (If Pickup option selected) Pick up Ready, Picked up
-// 4. There should be 3 filters on orders(New Order, Delivered Order, Cancelled Order)
-
 import React, { Component } from 'react';
 import { Alert, Table, Button, Modal, Form} from "react-bootstrap";
-import axios from 'axios';
 import 'react-bootstrap-table2-filter/dist/react-bootstrap-table2-filter.min.css';
 import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
 import BootstrapTable from 'react-bootstrap-table-next';
-import backend from '../common/serverDetails';
 
 class RestaurantOrders extends Component {
 
@@ -28,23 +19,7 @@ class RestaurantOrders extends Component {
 
     getRestaurantOrders() {
         let rest_id = localStorage.getItem("restaurant_id");
-        axios.defaults.withCredentials = true;
-        axios.get(`${backend}/restaurants/${rest_id}/orders`)
-            .then(response => {
-                if (response.data) {
-                    this.setState({
-                        orders: response.data,
-                        errorFlag: false,
-                        successFlag: true,
-                    });
-                }
-            })
-            .catch(err => {
-                this.setState({
-                    errorFlag: true,
-                    successFlag: false,
-                });
-            });
+        
     }
 
     clearSuccessMessage = (e) => {
@@ -59,33 +34,7 @@ class RestaurantOrders extends Component {
         const data = {
             status: e.target.value,
         };
-        axios.put(`${backend}/orders/${order_id}`, data)
-            .then(response => {
-                console.log("Order status update response : ",response.status, "Response JSON : ",response.data);
-                if (response.status === 200) {
-                    let orders = this.state.orders;
-                    let changedOrderIndex = orders.findIndex(o => o.id === parseInt(order_id, 10));
-                    orders[changedOrderIndex].status = data.status;
-
-                    this.setState({
-                        updateSuccess: true,
-                        updateFailed: false,
-                        orders: orders,
-                    });
-                } else if (response.status !== 200) {
-                    this.setState({
-                        updateSuccess: false,
-                        updateFailed: true,
-                    });
-                }
-            })
-            .catch((error) => {
-                console.log("Order status update failed!", error);
-                this.setState({
-                    updateSuccess: false,
-                    updateFailed: true,
-                });
-            });
+        
     }
 
     showOrder = (e) => {
@@ -259,7 +208,6 @@ class RestaurantOrders extends Component {
             console.log("Modal Customer Id", this.state.modal_cust_id)
             modal_customer = this.state.orders.find(o => o.cust_id === parseInt(this.state.modal_cust_id, 10));
             console.log("Modal customer:", modal_customer);   
-            modal_customerImgSrc = `${backend}/customers/${modal_customer.cust_id}/images`;
 
             cust_details_modal = <Modal
                                     show={true}
@@ -272,7 +220,6 @@ class RestaurantOrders extends Component {
                                     <Modal.Title>Customer Profile</Modal.Title>
                                     </Modal.Header>
                                     <Modal.Body>
-                                    <img src={modal_customerImgSrc} style = {{width:'29rem', height:'20rem'}} />
                                         <Table striped bordered hover>
                                             <tbody>
                                                 <tr>

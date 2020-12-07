@@ -3,9 +3,7 @@
 // 5. View list of dishes added by them.
 
 import React, { Component } from 'react';
-import axios from 'axios';
-import { Form, Col, Row, Button, Carousel } from "react-bootstrap";
-import backend from '../common/serverDetails';
+import { Form, Col, Row, Button } from "react-bootstrap";
 
 class RestaurantMenuAdd extends Component {
     constructor(props) {
@@ -33,30 +31,6 @@ class RestaurantMenuAdd extends Component {
             price: this.state.price,
             category: this.state.category,
         };
-
-        axios.defaults.withCredentials = true;
-        //make a post request with the user data
-        axios.post(`${backend}/restaurants/${localStorage.getItem("restaurant_id")}/dishes`, data)
-            .then(response => {
-                console.log("Dish Creation Status : ",response.status, "Response JSON : ",response.data);
-                if (response.status !== 200) {
-                    this.setState({
-                        errorFlag : true,
-                        successFlag : false,
-                    });
-                } else if (response.status === 200) {
-                    this.setState({
-                        errorFlag : false,
-                        successFlag : true,
-                    });
-                }
-            })
-            .catch((error) => {
-                console.log("Customer Signup Failed!", error);
-                this.setState({
-                    errorFlag : true,
-                });
-            });
     };
 
     

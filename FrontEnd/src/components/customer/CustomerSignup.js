@@ -70,6 +70,9 @@ class CustomerSignup extends Component{
         else if (this.state.message === "CUST_PRESENT" && this.state.signupFlag) {
             error = "Yor have already registered. Please Login."
         }
+        else if (this.state.message === "CUST_SIGNUP_ERROR" && this.state.signupFlag) {
+            error = "Sign up error. Please try again in some time."
+        }
 
         return(
             <div>

@@ -15,5 +15,54 @@ const getRestaurantQuery = gql`
     }
 `;
 
+const getCustomerQuery = gql`
+    query($customer_id: String){
+        customer(customer_id: $customer_id) {
+            name
+            email_id
+            phone
+            dob
+            city
+            state
+            country
+            nick_name
+            about
+            join_date
+            favourite_restaurant
+            favourite_hobby
+            blog_url
+        }
+    }
+`;
 
-export { getRestaurantQuery };
+const getRestaurantsQuery = gql`
+    query($input: String){
+        restaurants(input: $input) {
+            id
+            name
+            email_id
+            location
+            password
+            delivery_method
+            phone
+            description
+            timings
+            cuisine
+            rest_dishes {
+                id
+                name
+                ingredients
+                price
+                category
+                description
+            }
+            reviews {
+                rating
+                review
+                create_time
+            }
+        }
+    }
+`;
+
+export { getRestaurantQuery, getCustomerQuery, getRestaurantsQuery};

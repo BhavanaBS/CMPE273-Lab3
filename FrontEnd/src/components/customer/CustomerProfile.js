@@ -2,16 +2,14 @@
 // TODO: Update the customer Image
 
 import React, {Component} from 'react';
-import PropTypes from "prop-types";
 import '../../App.css';
-import axios from 'axios';
-import { Card, Container, Row, Col, Button, Form, Alert } from "react-bootstrap";
-import { connect } from "react-redux";
-import { updateAboutCustomer, getCustomer } from "../../redux/action/customerActions";
+import { Container, Row, Col, Button, Form, Alert } from "react-bootstrap";
+import { customerUpdateMutation } from "../../mutation/mutations";
+import { compose, graphql } from 'react-apollo';
+import { getCustomerQuery } from "../../queries/queries";
 import { Redirect } from 'react-router';
-import backend from '../common/serverDetails';
 
-class CustomerProfileForm extends Component {
+class CustomerProfile extends Component {
     
     constructor(props) {
         super(props);
@@ -24,30 +22,8 @@ class CustomerProfileForm extends Component {
         // this.getProfilePicture = this.getProfilePicture.bind(this);
     }
 
-    componentWillMount() {
-        this.props.getCustomer(localStorage.getItem("customer_id"));
-        // this.getProfilePicture();
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (!this.props.customer || this.props.customer.id !== nextProps.customer.id) {
-            this.setState({
-                id: nextProps.customer.id,
-                name: nextProps.customer.name,
-                email_id: nextProps.customer.email_id,
-                phone: nextProps.customer.phone,
-                dob: nextProps.customer.dob,
-                city: nextProps.customer.city,
-                state: nextProps.customer.state,
-                country: nextProps.customer.country,
-                nick_name: nextProps.customer.nick_name,
-                about: nextProps.customer.about,
-                join_date: nextProps.customer.join_date,
-                favourite_restaurant: nextProps.customer.favourite_restaurant,
-                favourite_hobby: nextProps.customer.favourite_hobby,
-                blog_url: nextProps.customer.blog_url
-            })
-        }
+    componentDidMount() {
+        this.getCustProfile();
     }
 
     onChange = (e) => {
@@ -57,135 +33,113 @@ class CustomerProfileForm extends Component {
         })
     }
 
-    onCustomerUpdate = (e) => {
+    getCustProfile(){
+        if (this.props.data && this.props.data.customer && !this.state.customerDetails) {
+            console.log("I got called");
+             this.setState({ 
+                customerDetails: this.props.data.customer,
+            });
+        }
+    }
+
+    onCustomerUpdate = async (e) => {
         //prevent page from refresh
         e.preventDefault();
-        console.log("on update");
-        let data = Object.assign({}, this.state);
-        this.props.updateAboutCustomer(data);
-    };
-
-    onImageChoose = (e) => {
-        this.setState({
-            successImageUpload: false,
-            file: e.target.files[0],
-            fileName: e.target.files[0].name
-        });
-    }
-
-    onPictureUpload = (e) => {
-        e.preventDefault();
-        let customer_id = localStorage.getItem('customer_id');
-        const formData = new FormData();
-        formData.append("image", this.state.file);
-        const headers = {
-            headers: {
-                "content-type": "multipart/form-data"
+        console.log("on customer profile update");
+        let mutationResponse = await this.props.customerUpdateMutation({
+            variables: {
+                email_id: this.state.customerDetails.email_id,
+                name: this.state.name?this.state.name:this.state.customerDetails.name,
+                phone: this.state.phone?this.state.phone:this.state.customerDetails.phone,
+                dob: this.state.dob?this.state.dob:this.state.customerDetails.dob,
+                city: this.state.city?this.state.city:this.state.customerDetails.city,
+                state: this.state.state?this.state.state:this.state.customerDetails.state,
+                country: this.state.country?this.state.country:this.state.customerDetails.country,
+                nick_name: this.state.nick_name?this.state.nick_name:this.state.customerDetails.nick_name,
+                about: this.state.about?this.state.about:this.state.customerDetails.about,
+                join_date: this.state.join_date?this.state.join_date:this.state.customerDetails.join_date,
+                favourite_restaurant: this.state.favourite_restaurant?this.state.favourite_restaurant:this.state.customerDetails.favourite_restaurant,
+                favourite_hobby: this.state.favourite_hobby?this.state.favourite_hobby:this.state.customerDetails.favourite_hobby,
+                blog_url: this.state.blog_url?this.state.blog_url:this.state.customerDetails.blog_url,
             }
-        };
-        axios.patch(`${backend}/customers/${customer_id}/images`, formData, headers)
-            .then(response => {
+        });
+        let response = mutationResponse.data.customerUpdate;
+        if (response) {
+            if (response.status === "200") {
                 this.setState({
-                    successImageUpload: true,
-                    errorImageUpload: false,
-                    fileName: "Change Profile Image",
-                    // user_image: `/customers/${customer_id}/images`,
+                    success: true,
+                    data: response.message,
+                    updateFlag: true
                 });
-            })
-            .catch(err => {
+            } else {
                 this.setState({
-                    successImageUpload: false,
-                    errorImageUpload: true,
+                    message: response.message,
+                    updateFlag: true
                 });
-                console.log("Error");
-            });
-    }
-
-    // getProfilePicture = (e) => {
-    //     let customer_id = localStorage.getItem('customer_id');
-        
-    //     axios.get(`/customers/${customer_id}/images`)
-    //         .then(response => {
-    //             if(response.status === 200) {
-    //                 this.setState({
-    //                     user_image: `/customers/${customer_id}/images`,
-    //                 });
-    //             } else if(response.status === 404) {
-    //                 console.log("No image for the user");
-    //             }
-    //         })
-    //         .catch(err => {
-    //             console.log("Error",err);
-    //         });
-    // }
+            }
+        }
+    };
 
     render() {
 
-        let redirectVar = null;
-        if (!localStorage.getItem("customer_id")) {
+        let redirectVar = null, error = "" , success= "";
+        if (localStorage.getItem("customer_id") === null ) {
             redirectVar = <Redirect to="/r_home" />
         }
 
-        console.log("State: ", this.state);
-        let error = null;
-        if (this.props.showFailure) {
-            error = (
-                <div>
-                    <p style={{ color: "red" }}>Update Failed!</p>
-                </div>
-            );
+        if(!this.state.customerDetails){
+            this.getCustProfile();
         }
 
-        if (this.props.customer === 'Update Successful') {
+        if (this.state.success) {
+            success = (
+                        <div>
+                            <Alert variant="success">Profile Updated Successfully!</Alert>
+                        </div>
+                    );
+            // success = "Profile Updated Successfully";
+        }   
+        else if (this.state.message === "CUSTOMER_UPDATE_ERROR" && this.state.updateFlag) {
             error = (
                 <div>
-                    <p style={{ color: "green" }}>Update Success!</p>
+                    <Alert variant="danger">Profile update failed. Please try again in some time.</Alert>
+                    </div>
+                );
+        }
+        else if (this.state.message === "INTERNAL_SERVER_ERROR" && this.state.updateFlag) {
+            error = (
+                <div>
+                    <Alert variant="danger">Profile update failed. Please try again in some time.</Alert>
+            </div>
+        );
+        }
+
+        if(!this.state.customerDetails) {
+            return (
+                <div>
+                <p> 
+                    Please wait for some time
+                </p>
                 </div>
-            );
+            )
         }
         
         var joinDate = null;
-        if(this.state.join_date) {
-            joinDate = this.state.join_date.slice(0,10);
-        }
-
-        let successImageUploadMessage;
-        if (this.state && this.state.successImageUpload) {
-            successImageUploadMessage = <Alert variant="success">Successfully Uploaded Image</Alert>
-        }
-
-        let userImage;
-        if (this.state) {
-
-            userImage = <img src={`${backend}/customers/${localStorage.getItem("customer_id")}/images`} style = {{width:'30rem', height:'20rem'}}/>
+        if(this.state.customerDetails.join_date) {
+            joinDate = this.state.customerDetails.join_date.slice(0,10);
         }
 
         return (
             <div>
             {redirectVar}
-            {successImageUploadMessage}
                 <Container fluid={true}>
                 <br/><br/><br/>
 
                     <Row>
-                    <Col xs={6} md={4}>
-                        <center>
-                            <Card style={{ width: '30rem' }}>
-                            {userImage}
-                            </Card>
-                            <form onSubmit={this.onPictureUpload}><br /><br /><br />
-                                <div class="custom-file" style={{width: "80%"}}>
-                                    <input type="file" multiple class="custom-file-input" name="image" accept="image/*" onChange={this.onImageChoose} required/>
-                                    <label class="custom-file-label" for="image">{this.state.fileName}</label>
-                                </div><br/><br/>
-                                <Button type="submit" variant="primary">Upload Image</Button>
-                            </form>
-                        </center>
-                    </Col>
-                        <Col xs={2} md={1}></Col>
+                        <Col xs={4} md={2}></Col>
                         <Col style={{ width: '60rem' }}>
                         
-                            <h2>Update {this.state.name}'s Profile</h2>
+                            <h2>Update {this.state.customerDetails.name}'s Profile</h2>
                             <br />
                             <br />
                             <Form onSubmit={this.onCustomerUpdate} >
@@ -197,8 +151,7 @@ class CustomerProfileForm extends Component {
                                             onChange={this.onChange}
                                             value={this.state.name}
                                             pattern="^[A-Za-z0-9 ]+$"
-                                            required={true}
-                                            placeholder="Update Customer Name" 
+                                            placeholder={this.state.customerDetails.name}
                                             style={{ width: '30rem' }}/>
                                     </Form.Group>
                                 </Form.Row>
@@ -210,8 +163,7 @@ class CustomerProfileForm extends Component {
                                             onChange={this.onChange}
                                             value={this.state.about}
                                             pattern="^[A-Za-z0-9 ,.]+$"
-                                            required={true}
-                                            placeholder="Update About Me" 
+                                            placeholder={this.state.customerDetails.about}
                                             style={{ width: '30rem' }}/>
                                     </Form.Group>
                                 </Form.Row>
@@ -224,8 +176,7 @@ class CustomerProfileForm extends Component {
                                             onChange={this.onChange}
                                             value={this.state.city}
                                             pattern="^[A-Za-z0-9 ,.]+$"
-                                            required={true}
-                                            placeholder="Update City"
+                                            placeholder={this.state.customerDetails.city}
                                             style={{ width: '30rem' }}
                                         />
                                     </Form.Group>
@@ -239,8 +190,7 @@ class CustomerProfileForm extends Component {
                                             onChange={this.onChange}
                                             value={this.state.state}
                                             pattern="^[A-Za-z0-9 ,.]+$"
-                                            required={true}
-                                            placeholder="Update State"
+                                            placeholder={this.state.customerDetails.state}
                                             style={{ width: '30rem' }}
                                         />
                                     </Form.Group>
@@ -254,8 +204,7 @@ class CustomerProfileForm extends Component {
                                             onChange={this.onChange}
                                             value={this.state.country}
                                             pattern="^[A-Za-z0-9 ,.]+$"
-                                            required={true}
-                                            placeholder="Update Country"
+                                            placeholder={this.state.customerDetails.country}
                                             style={{ width: '30rem' }}
                                         />
                                     </Form.Group>
@@ -266,7 +215,7 @@ class CustomerProfileForm extends Component {
                                         <Form.Control 
                                             type="email"
                                             name="email_id"
-                                            value={this.state.email_id}
+                                            value={this.state.customerDetails.email_id}
                                             readOnly
                                             disabled
                                             style={{ width: '30rem' }}
@@ -281,10 +230,9 @@ class CustomerProfileForm extends Component {
                                             name="phone"
                                             onChange={this.onChange}
                                             value={this.state.phone}
-                                            required={true}
                                             pattern="^[0-9+()-]+$"
                                             title="Please enter in the form Only Numbers"
-                                            placeholder="Update Phone Number"
+                                            placeholder={this.state.customerDetails.phone}
                                             style={{ width: '30rem' }}
                                         />
                                     </Form.Group>
@@ -297,9 +245,8 @@ class CustomerProfileForm extends Component {
                                             name="dob"
                                             value={this.state.dob}
                                             onChange={this.onChange}
-                                            required={true}
                                             pattern="^[0-9-]+$"
-                                            placeholder="Update Date Of Birth"
+                                            placeholder={this.state.customerDetails.dob}
                                             style={{ width: '30rem' }}
                                         />
                                     </Form.Group>
@@ -312,9 +259,8 @@ class CustomerProfileForm extends Component {
                                             name="nick_name"
                                             value={this.state.nick_name}
                                             onChange={this.onChange}
-                                            required={true}
                                             pattern="^[a-zA-z ]+$"
-                                            placeholder="Update Preferred Name"
+                                            placeholder={this.state.customerDetails.nick_name}
                                             style={{ width: '30rem' }}
                                         />
                                     </Form.Group>
@@ -338,8 +284,7 @@ class CustomerProfileForm extends Component {
                                             name="blog_url"
                                             value={this.state.blog_url}
                                             onChange={this.onChange}
-                                            required={true}
-                                            placeholder="Update Blog url"
+                                            placeholder={this.state.customerDetails.blog_url}
                                             style={{ width: '30rem' }}
                                         />
                                     </Form.Group>
@@ -352,8 +297,7 @@ class CustomerProfileForm extends Component {
                                             name="favourite_hobby"
                                             value={this.state.favourite_hobby}
                                             onChange={this.onChange}
-                                            required={true}
-                                            placeholder="Update Favourite Hobby"
+                                            placeholder={this.state.customerDetails.favourite_hobby}
                                             style={{ width: '30rem' }}
                                         />
                                     </Form.Group>
@@ -366,8 +310,7 @@ class CustomerProfileForm extends Component {
                                             name="favourite_restaurant"
                                             value={this.state.favourite_restaurant}
                                             onChange={this.onChange}
-                                            required={true}
-                                            placeholder="Update Favourite Restaurant"
+                                            placeholder={this.state.customerDetails.favourite_restaurant}
                                             style={{ width: '30rem' }}
                                         />
                                     </Form.Group>
@@ -378,7 +321,9 @@ class CustomerProfileForm extends Component {
                             </Form>
                         </Col>
                     </Row>
+                    <br/><br/>
                     {error}
+                    {success}
                     <br/><br/>
                 </Container>
             </div>
@@ -386,23 +331,11 @@ class CustomerProfileForm extends Component {
     }
 }
 
-CustomerProfileForm.propTypes = {
-    updateAboutCustomer: PropTypes.func.isRequired,
-    customer: PropTypes.object.isRequired
-}
-
-const mapStateToProps = state => {
-    return {
-        showFailure: state.customer.showFailure,
-        customer: state.customer.customer,
-    };
-};
-
-function mapDispatchToProps(dispatch) {
-    return {
-        getCustomer: customer_id => dispatch(getCustomer(customer_id)),
-        updateAboutCustomer: data => dispatch(updateAboutCustomer(data))
-    };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(CustomerProfileForm);
+export default compose(
+    graphql(getCustomerQuery, {
+        name: "data",
+        options: { variables: { customer_id: localStorage.getItem("customer_id") }
+        }
+    }),
+    graphql(customerUpdateMutation, { name: "customerUpdateMutation" })
+)(CustomerProfile);

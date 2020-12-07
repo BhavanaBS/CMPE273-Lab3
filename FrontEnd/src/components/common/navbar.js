@@ -43,6 +43,7 @@ class HeaderNavbar extends Component {
                                     Hi Restaurant!
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu>
+                                    <Dropdown.Item><Link to="/r_home">Home</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/r_profile">Profile</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/r_menu/view">Menu</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/r_orders">Orders</Link></Dropdown.Item>
@@ -65,6 +66,7 @@ class HeaderNavbar extends Component {
                                     Hi, Customer!
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu>
+                                    <Dropdown.Item><Link to="/c_home">Home</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/c_profile">Profile</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/c_cart">Cart</Link></Dropdown.Item>
                                     <Dropdown.Item><Link to="/c_orders">Order History</Link></Dropdown.Item>

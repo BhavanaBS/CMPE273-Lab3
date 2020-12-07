@@ -57,7 +57,7 @@ class CustomerLogin extends Component {
             localStorage.setItem("token", token);
             var decoded = jwt_decode(token.split(' ')[1]);
             localStorage.setItem("customer_id", decoded.customer_id);
-            redirectVar = <Redirect to="/c_home" />
+            redirectVar = <Redirect to='/c_home' />
         }            
         else if (this.state.message === "NO_CUSTOMER" && this.state.loginFlag) {
             error = "Please Register to continue";

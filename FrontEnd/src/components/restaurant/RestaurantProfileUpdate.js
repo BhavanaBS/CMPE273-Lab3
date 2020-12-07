@@ -20,7 +20,7 @@ class RestaurantProfile extends Component {
     }
 
     getRestprofile(){
-        if (this.props.data && this.props.data.restaurant && !this.state.restaurantDetails) {
+        if (this.props.data && this.props.data.restaurant && !this.state && !this.state.restaurantDetails) {
             console.log("I got called");
              this.setState({ 
                 restaurantDetails: this.props.data.restaurant,
@@ -31,26 +31,6 @@ class RestaurantProfile extends Component {
     componentDidMount() {
         this.getRestprofile();
     }
-
-    // componentWillMount() {
-    //     this.props.getRestaurant(localStorage.getItem("restaurant_id"));
-    // }
-
-    // componentWillReceiveProps(nextProps) {
-    //     if (!this.props.restaurant || this.props.restaurant.id !== nextProps.restaurant.id) {
-    //         this.setState({
-    //             id: nextProps.restaurant.id,
-    //             name: nextProps.restaurant.name,
-    //             phone: nextProps.restaurant.phone,
-    //             email_id: nextProps.restaurant.email_id,
-    //             description: nextProps.restaurant.description,
-    //             location: nextProps.restaurant.location,
-    //             timings: nextProps.restaurant.timings,
-    //             delivery_method: nextProps.restaurant.delivery_method,
-    //             map_location: nextProps.restaurant.map_location,
-    //         })
-    //     }
-    // }
 
     onChange = (e) => {
         this.setState({
@@ -93,9 +73,9 @@ class RestaurantProfile extends Component {
 
     render() {
 
-        let redirectVar = null, restaurantDetailsTable = null;
+        let redirectVar = null, error = "" , success= "";
         if (localStorage.getItem("restaurant_id") === null ) {
-            redirectVar = <Redirect to="/customer/home" />
+            redirectVar = <Redirect to="/c_home" />
         }
 
         if(!this.state.restaurantDetails){
@@ -103,22 +83,26 @@ class RestaurantProfile extends Component {
         }
 
         if (this.state.success) {
-            redirectVar = <Redirect to="/r_home" />
+            success = (
+                        <div>
+                            <Alert variant="success">Profile Updated Successfully!</Alert>
+                        </div>
+                    );
+            // success = "Profile Updated Successfully";
         }   
-        else if (this.state.message === "NO_RESTAURANT" && this.state.loginFlag) {
-            error = "Please Register to continue";
-        }
-        else if (this.state.message === "INVALID_RESTAURANT_CREDENTIALS" && this.state.loginFlag) {
-            error = "Incorrect Password";
-        }
-
-        let error = null;
-        if (this.props.showFailure) {
+        else if (this.state.message === "RESTAURANT_UPDATE_ERROR" && this.state.updateFlag) {
             error = (
                 <div>
-                    <Alert variant="danger">Update Failed!</Alert>
-                </div>
-            );
+                    <Alert variant="danger">Profile update failed. Please try again in some time.</Alert>
+                    </div>
+                );
+        }
+        else if (this.state.message === "INTERNAL_SERVER_ERROR" && this.state.updateFlag) {
+            error = (
+                <div>
+                    <Alert variant="danger">Profile update failed. Please try again in some time.</Alert>
+            </div>
+        );
         }
 
         if(!this.state.restaurantDetails) {
@@ -135,11 +119,11 @@ class RestaurantProfile extends Component {
             <div>
             {redirectVar}
             {error}
+            {success}
             <br/><br/><br/>
                 <Container style={{ marginLeft:'3rem', marginRight:'3rem' }} fluid={true}>
                     <Row>
-                        <Col xs={6} md={4}>
-                        </Col>
+                        
                         <Col xs={2} md={1}></Col>
                         <Col style={{ width: '55rem' }}>
                             <h4>Update {this.state.restaurantDetails.name}'s Profile</h4>

@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import '../../App.css';
 import {Redirect} from 'react-router';
-import { Link } from 'react-router-dom';
 import { graphql } from 'react-apollo';
 import { addRestaurantMutation } from '../../mutation/mutations';
 
@@ -71,6 +70,9 @@ class RestaurantSignup extends Component{
         }
         else if (this.state.message === "REST_PRESENT" && this.state.signupFlag) {
             error = "Yor have already registered. Please Login."
+        }
+        else if (this.state.message === "REST_SIGNUP_ERROR" && this.state.signupFlag) {
+            error = "Sign up error. Please try again in some time."
         }
 
         return(

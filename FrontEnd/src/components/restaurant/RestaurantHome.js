@@ -18,14 +18,10 @@ class RestaurantHome extends Component {
     getRestprofile(){
        if (this.props.data && this.props.data.restaurant && !this.state.restaurantDetails) {
            console.log("I got called");
-           if(!this.state || !this.state.restaurantDetails){
-            this.getRestprofile();
-        }
+            this.setState({ 
+                restaurantDetails: this.props.data.restaurant,
+            });
        }
-    }
-
-    componentWillMount() {
-        this.getRestprofile();
     }
 
     render() {

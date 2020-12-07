@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import { Container, Alert, Row, Col, Card, Button } from "react-bootstrap";
+import { Redirect } from 'react-router';
+import { getReviewsQuery } from "../../queries/queries";
+import { graphql } from 'react-apollo';
 
 class RestaurantReviewsView extends Component {
 
@@ -11,10 +14,22 @@ class RestaurantReviewsView extends Component {
         this.getReviews();
     }
 
-    getReviews = () => {
-        let rest_id = localStorage.getItem("restaurant_id");
-        
-    };
+    getReviews(){
+        if (this.props.data && this.props.data.reviews && this.state && !this.state.restaurantReviews) {
+            console.log("I got called");
+             this.setState({ 
+                restaurantReviews: this.props.data.reviews,
+            });
+        }
+    }
+
+    componentDidMount() {
+        this.getReviews();
+        this.setState({
+
+        })
+    }
+
 
     getLocaleTime = (create_time) => {
         var ts = new Date(create_time);
@@ -58,13 +73,15 @@ class RestaurantReviewsView extends Component {
         let message, review;
         let reviewsList = [];
 
+        this.getReviews();
+
         if (this.state && this.state.errorFlag) {
             message = <Alert variant="warning">No rewiews available yet.</Alert>;
         }
         
-        if (this.state && this.state.reviews) {
-            for (var i = 0; i < this.state.reviews.length; i++) {
-                review= this.reviewsView(this.state.reviews[i]);
+        if (this.state && this.state.restaurantReviews) {
+            for (var i = 0; i < this.state.restaurantReviews.length; i++) {
+                review= this.reviewsView(this.state.restaurantReviews[i]);
                 reviewsList.push(review);
             }
         }
@@ -84,4 +101,8 @@ class RestaurantReviewsView extends Component {
     }
 }
 
-export default RestaurantReviewsView;
+export default graphql(getReviewsQuery, {
+    name: "data",
+    options: { variables: { restaurant_id: localStorage.getItem("restaurant_id") }
+    }
+})(RestaurantReviewsView);

@@ -30,22 +30,19 @@ class CustomerOrders extends Component {
 
     componentDidMount () {
         this.getCustomerOrders();
+        this.setState({
+
+        })
     }
 
     getCustomerOrders() {
-        if (this.props.data && this.props.data.customerOrders && !this.state && !this.state.customerOrderHistory) {
+        if (this.props.data && this.props.data.customerOrders 
+            && this.state && !this.state.customerOrderHistory) {
             console.log("I got called");
              this.setState({ 
                 customerOrderHistory: this.props.data.customerOrders,
             });
         }
-    }
-
-    onStatusSelection = (e) => {
-        console.log("Event from dropdown", e.target.text);
-        this.setState({
-            deliveryMethod: e.target.eventKey,
-        })
     }
 
     columns = [{
@@ -75,10 +72,8 @@ class CustomerOrders extends Component {
         if(this.state && !this.state.customerOrderHistory) {
             message = <Alert varient ="warning">No Order History.</Alert>
         }
-
-        if(!this.state || !this.state.customerOrderHistory){
-            this.getCustomerOrders();
-        }
+        
+        this.getCustomerOrders();
 
         if (this.state && this.state.customerOrderHistory) {
 
@@ -101,51 +96,6 @@ class CustomerOrders extends Component {
                             </BootstrapTable>
             
         }
-
-        // if (this.state && this.state.modal_order_id) {
-        //     console.log("Modal OrderId", this.state.modal_order_id)
-        //     modal_order = this.state.orders.find(o => o.id === parseInt(this.state.modal_order_id, 10));
-        //     console.log("Modal Order:", modal_order);
-        //     for (var i = 0; i < modal_order.dishes.length; i++) {
-        //         if(modal_order.dishes[i]){    
-        //             dish = this.dishView((i+1), modal_order.dishes[i]);
-        //             dish_details_in_modal.push(dish);
-        //         }
-        //     }
-            // details_modal = <Modal
-            //                         show={true}
-            //                         backdrop="static"
-            //                         onHide={this.handleDetailsModalClose}
-            //                         keyboard={false}
-            //                         centered={true}
-            //                     >
-            //                         <Modal.Header closeButton>
-            //                         <Modal.Title>Order Details</Modal.Title>
-            //                         </Modal.Header>
-            //                         <Modal.Body>
-            //                             <Table striped bordered hover>
-            //                                 <thead>
-            //                                     <tr>
-            //                                     <th>#</th>
-            //                                     <th>Dish Name</th>
-            //                                     <th>Quantity</th>
-            //                                     <th>Price</th>
-            //                                     </tr>
-            //                                 </thead>
-            //                                 <tbody>
-            //                                     {dish_details_in_modal}
-            //                                 </tbody>
-            //                             </Table>
-                                        
-            //                         </Modal.Body>
-            //                         <Modal.Footer>
-            //                             <Button variant="secondary" onClick={this.handleDetailsModalClose}>
-            //                                 Close
-            //                             </Button>
-            //                         </Modal.Footer>
-            //                     </Modal>
-
-        // }
 
         return(
             <div>

@@ -67,9 +67,20 @@
 //   	}
 // }
 
+// mutation{
 // updateOrder(order_id: "5fcdf3453d2c00c2d40b0ae1", status:"Order Received"){
 //     message
 //   status
 //     }
+// }
+
+// Menu Actions
+// mutation{
+// 	addDish(restaurant_id:"5f98f45286232a79557013c5", name:"Banana Milkshake",
+//   ingredients:"Banana, Milk", price:"1.79", 
+//   category:"Beverages", description:"Its a shake."){
+//   	message
+//     status
+//   	}
 // }
       

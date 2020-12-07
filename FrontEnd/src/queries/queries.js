@@ -78,5 +78,29 @@ const getCustomerOrdersQuery = gql`
     }
 `;
 
+const getReviewsQuery = gql`
+    query($restaurant_id: String){
+        reviews(restaurant_id: $restaurant_id) {
+            rating
+            review
+            create_time
+        }
+    }
+`;
+
+const getRestaurantOrdersQuery = gql`
+query($restaurant_id: String){
+    restaurantOrders(restaurant_id: $restaurant_id) {
+        status
+        create_time
+        delivery_method
+        dish_name
+        quantity
+        customer_id
+        id
+    }
+}
+`;
+
 export { getRestaurantQuery, getCustomerQuery, getRestaurantsQuery,
-    getCustomerOrdersQuery};
+    getCustomerOrdersQuery, getReviewsQuery, getRestaurantOrdersQuery};

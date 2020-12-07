@@ -117,6 +117,7 @@
 //     }
 //   }
 
+// Fetch all customer orders
 // query{
 //     customerOrders(customer_id: "5f8e81eca5b8ff52e61d1af5") {
 //       id
@@ -126,5 +127,40 @@
 //       dish_name
 //       quantity
 //       restaurant_id
+//       restaurant_name
 //     }
 //   }
+
+// Fetch all restaurant orders
+// query{
+//     restaurantOrders(restaurant_id: "5f98f45286232a79557013c5") {
+//       id
+//       status
+//       create_time
+//       delivery_method
+//       dish_name
+//       quantity
+//     }
+//   }
+
+// To fetch all reviews of a restaurant
+// query{
+//     reviews(restaurant_id: "5f98f45286232a79557013c5") {
+//       rating
+//     review
+//     create_time
+//     }
+//   } 
+
+// Restaurant Menu
+// query{
+//     menu(restaurant_id: "5f98f45286232a79557013c5") {
+//         name
+//         id
+//         ingredients
+//         description
+//         price
+//         category
+//     }
+// }
+

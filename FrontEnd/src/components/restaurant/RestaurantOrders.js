@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
-import { Alert, Table, Button, Modal, Form} from "react-bootstrap";
+import { Alert, Button, Form} from "react-bootstrap";
 import 'react-bootstrap-table2-filter/dist/react-bootstrap-table2-filter.min.css';
 import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
 import BootstrapTable from 'react-bootstrap-table-next';
+import { getRestaurantOrdersQuery } from "../../queries/queries";
+import { compose, graphql } from 'react-apollo';
+import { updateOrderMutation } from "../../mutation/mutations";
 
 class RestaurantOrders extends Component {
 
@@ -14,12 +17,24 @@ class RestaurantOrders extends Component {
             rest_id : localStorage.getItem("restaurant_id"),
             update_success_order_id: ""
         });
+        this.getRestaurantOrders = this.getRestaurantOrders.bind(this);
+    }
+
+    componentDidMount () {
         this.getRestaurantOrders();
+        this.setState({
+
+        })
     }
 
     getRestaurantOrders() {
-        let rest_id = localStorage.getItem("restaurant_id");
-        
+        if (this.props.data && this.props.data.restaurantOrders 
+            && this.state && !this.state.restaurantOrderHistory) {
+            console.log("I got called");
+             this.setState({ 
+                restaurantOrderHistory: this.props.data.restaurantOrders,
+            });
+        }
     }
 
     clearSuccessMessage = (e) => {
@@ -29,56 +44,29 @@ class RestaurantOrders extends Component {
         })
     }
 
-    updateOrderStatus = (e) => {
-        let order_id = e.target.name;
-        const data = {
-            status: e.target.value,
-        };
-        
-    }
-
-    showOrder = (e) => {
-        console.log(e.target);
-        this.setState({
-            modal_order_id: e.target.name,
-        })
-    }
-
-    dishView = (index, dish) => {
-        return <tr>
-                    <td>{index}</td>
-                    <td>{dish.name}</td>
-                    <td>{dish.quantity}</td>
-                    <td>{dish.price * dish.quantity}</td>
-                </tr>;
-    }
-
-    showCustomerDetails = (e) => {
-        console.log(e.target);
-        this.setState({
-            modal_cust_id: e.target.name,
-        })
-    }
-
-    handleDetailsModalClose = () => {
-        this.setState({
-            modal_order_id: "",
-            modal_cust_id: ""
-        })
-    }
-
-
-    getLocaleTime = (create_time) => {
-        var ts = new Date(create_time);
-        console.log("Timestamp:", ts.toLocaleString);
-        return ts.toLocaleString();
-    }
-
-    convertStatus = (status) => {
-        if (status === "NEW") {
-            return "New Order";
+    updateOrderStatus = async (e) => {
+        let mutationResponse = await this.props.updateOrderMutation({
+            variables: {
+                order_id: e.target.name,
+                status: e.target.value,
+            }
+        });
+        let response = mutationResponse.data.updateOrder;
+        if (response) {
+            if (response.status === "200") {
+                this.setState({
+                    success: true,
+                    data: response.message,
+                    loginFlag: true
+                });
+            } else {
+                this.setState({
+                    message: response.message,
+                    loginFlag: true
+                });
+            }
         }
-        return status;
+
     }
 
     columns = [{
@@ -92,11 +80,17 @@ class RestaurantOrders extends Component {
         text: 'Status',
         filter: textFilter()
       }, {
-        dataField: 'details',
-        text: 'Order Details',
-      }, {
         dataField: 'change_status',
         text: 'Update Status',
+      }, {
+        dataField: 'dish_name',
+        text: 'Dish Name',
+      }, {
+        dataField: 'quantity',
+        text: 'Quantity',
+      }, {
+        dataField: 'delivery_method',
+        text: 'Delivery Method'
       }];
 
     getStatusFormControl = (order) => {
@@ -122,11 +116,11 @@ class RestaurantOrders extends Component {
     render() {
 
         let message, bootstrapTable;
-        let details_modal, modal_order, dish_details_in_modal = [], dish;
-        let cust_details_modal, modal_customer, modal_customerImgSrc;
         let change_status;
 
-        if(this.state && !this.state.orders) {
+        this.getRestaurantOrders();
+
+        if(this.state && !this.state.restaurantOrderHistory) {
             message = <Alert varient ="warning">No Order History.</Alert>
         }
 
@@ -138,15 +132,16 @@ class RestaurantOrders extends Component {
             message = <Alert varient ='success' style={{color:"green"}}>Order status updated successfully.</Alert>
         }
 
-        if(this.state && this.state.orders) {
-            let bootStrapTableOrders = this.state.orders.map(o => { return {
+        if(this.state && this.state.restaurantOrderHistory) {
+            let bootStrapTableOrders = this.state.restaurantOrderHistory.map(o => { return {
                 id: o.id,
-                cust_name:<Button onClick={this.showCustomerDetails} name={o.cust_id}>{o.cust_name}</Button>,
-                create_time: this.getLocaleTime(o.create_time),
-                status: this.convertStatus(o.status),
-                details: <Button onClick={this.showOrder} name={o.id}>Order Details</Button>,
+                cust_name:<Button>Customer Details</Button>,
+                create_time: o.create_time,
+                status: o.status,
                 change_status: this.getStatusFormControl(o),
-
+                dish_name:o.dish_name,
+                quantity:o.quantity,
+                delivery_method:o.delivery_method,
             }});
 
             bootstrapTable = <BootstrapTable 
@@ -159,114 +154,6 @@ class RestaurantOrders extends Component {
             
         }
 
-        if (this.state && this.state.modal_order_id) {
-            console.log("Modal OrderId", this.state.modal_order_id)
-            modal_order = this.state.orders.find(o => o.id === parseInt(this.state.modal_order_id, 10));
-            console.log("Modal Order:", modal_order);
-            for (var i = 0; i < modal_order.dishes.length; i++) {
-                if(modal_order.dishes[i]){    
-                    dish = this.dishView((i+1), modal_order.dishes[i]);
-                    dish_details_in_modal.push(dish);
-                }
-            }
-            details_modal = <Modal
-                                    show={true}
-                                    backdrop="static"
-                                    onHide={this.handleDetailsModalClose}
-                                    keyboard={false}
-                                    centered={true}
-                                >
-                                    <Modal.Header closeButton>
-                                    <Modal.Title>Order Details</Modal.Title>
-                                    </Modal.Header>
-                                    <Modal.Body>
-                                        <Table striped bordered hover>
-                                            <thead>
-                                                <tr>
-                                                <th>#</th>
-                                                <th>Dish Name</th>
-                                                <th>Quantity</th>
-                                                <th>Price</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {dish_details_in_modal}
-                                            </tbody>
-                                        </Table>
-                                        
-                                    </Modal.Body>
-                                    <Modal.Footer>
-                                        <Button variant="secondary" onClick={this.handleDetailsModalClose}>
-                                            Close
-                                        </Button>
-                                    </Modal.Footer>
-                                </Modal>
-
-        }
-
-        if (this.state && this.state.modal_cust_id) {
-            console.log("Modal Customer Id", this.state.modal_cust_id)
-            modal_customer = this.state.orders.find(o => o.cust_id === parseInt(this.state.modal_cust_id, 10));
-            console.log("Modal customer:", modal_customer);   
-
-            cust_details_modal = <Modal
-                                    show={true}
-                                    backdrop="static"
-                                    onHide={this.handleDetailsModalClose}
-                                    keyboard={false}
-                                    dialogClassName="modal-90w"
-                                >
-                                    <Modal.Header closeButton>
-                                    <Modal.Title>Customer Profile</Modal.Title>
-                                    </Modal.Header>
-                                    <Modal.Body>
-                                        <Table striped bordered hover>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Name</td>
-                                                    <td>{modal_customer.cust_name}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Phone</td>
-                                                    <td>{modal_customer.cust_phone}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Email Id</td>
-                                                    <td>{modal_customer.cust_email_id}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Address</td>
-                                                    <td>{modal_customer.cust_address}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Birth Date</td>
-                                                    <td>{modal_customer.cust_dob}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>About</td>
-                                                    <td>{modal_customer.cust_about}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Yelping Since</td>
-                                                    <td>{this.getLocaleTime(modal_customer.cust_join_date)}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Blog</td>
-                                                    <td>{modal_customer.cust_blog_url}</td>
-                                                </tr>
-                                            </tbody>
-                                        </Table>
-                                        
-                                    </Modal.Body>
-                                    <Modal.Footer>
-                                        <Button variant="secondary" onClick={this.handleDetailsModalClose}>
-                                            Close
-                                        </Button>
-                                    </Modal.Footer>
-                                </Modal>
-
-        }
-
         return (
             <div>
                 <br/><br/>
@@ -277,8 +164,6 @@ class RestaurantOrders extends Component {
                 <div style={{marginLeft:"15rem", marginRight:"15rem"}}>
                 {bootstrapTable}
                 </div>
-                {details_modal}
-                {cust_details_modal}
                 {change_status}
                 <center><Button href="/r_home">Home</Button></center>
             </div>
@@ -287,4 +172,11 @@ class RestaurantOrders extends Component {
 
 }
 
-export default RestaurantOrders;
+export default compose(
+graphql (getRestaurantOrdersQuery, {
+    name: "data",
+    options: { variables: { restaurant_id: localStorage.getItem("restaurant_id")  }
+    }
+}),
+graphql(updateOrderMutation, { name: "updateOrderMutation" })
+) (RestaurantOrders);

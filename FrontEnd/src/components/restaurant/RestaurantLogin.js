@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import '../../App.css';
-import cookie from 'react-cookies';
 import { Redirect } from 'react-router';
 import { restaurantLoginMutation } from "../../mutation/mutations";
-import { Link } from 'react-router-dom';
 import { graphql } from 'react-apollo';
 const jwt_decode = require('jwt-decode');
 
@@ -58,13 +56,13 @@ class RestaurantLogin extends Component{
             let token = this.state.data;
             localStorage.setItem("token", token);
             var decoded = jwt_decode(token.split(' ')[1]);
-            localStorage.setItem("restaurant_id", decoded.customer_id);
+            localStorage.setItem("restaurant_id", decoded.restaurant_id);
             redirectVar = <Redirect to="/r_home" />
         }            
-        else if (this.state.message === "NO_USER" && this.state.loginFlag) {
+        else if (this.state.message === "NO_RESTAURANT" && this.state.loginFlag) {
             error = "Please Register to continue";
         }
-        else if (this.state.message === "INCORRECT_PASSWORD" && this.state.loginFlag) {
+        else if (this.state.message === "INVALID_RESTAURANT_CREDENTIALS" && this.state.loginFlag) {
             error = "Incorrect Password";
         }
 
@@ -84,7 +82,7 @@ class RestaurantLogin extends Component{
                             <div class="form-group">
                                 <input onChange = {this.onChange} type="password" class="form-control" name="password" placeholder="Password" required/>
                             </div>
-                            {error}
+                            <div style={{ color: "#ff0000" }}>{error}<br/></div>
                             <button type="submit" class="btn btn-primary"> Sign in </button>                 
                         </div>
                     </form>

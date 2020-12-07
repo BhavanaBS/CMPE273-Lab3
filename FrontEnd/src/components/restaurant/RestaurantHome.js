@@ -1,17 +1,11 @@
-// Restaurant page (Dashboard – Landing page):
-// 1. View restaurant profile – having all basic information about restaurant (name, location, description, contact information, pictures of restaurant and dishes, timings)
-// 2. TODO: Update the restaurant Image
-// 3. View orders list
-
 import React, {Component} from 'react';
 import '../../App.css';
-import cookie from 'react-cookies';
 import {Link} from 'react-router-dom';
 import {Redirect} from 'react-router';
-import { Card, Container, Table,Row, Col, Carousel} from "react-bootstrap";
-import axios from 'axios';
-import yelp_logo from "../../images/yelp.png";
-import backend from '../common/serverDetails';
+import { getRestaurantQuery } from "../../queries/queries";
+import { graphql } from 'react-apollo';
+import { Card, Container, Table,Row, Col } from "react-bootstrap";
+
 
 class RestaurantHome extends Component {
     constructor(props) {
@@ -19,96 +13,32 @@ class RestaurantHome extends Component {
         super(props);
         //maintain the state required for this component
         this.state = {};
-        this.getRestaurantProfile();
-        this.getRestaurantImageIds();
     }
 
-    getRestaurantImageIds = () => {
-        var restaurantId = localStorage.getItem("restaurant_id");
-        console.log("Fetching the imageIds for restaurantId ", restaurantId);
-    
-
-        axios.get(`${backend}/restaurants/${restaurantId}/images`)
-            .then(response => {
-                console.log("Status Code : ",response.status, "Response JSON : ",response.data);
-                if (response.status === 200) {
-                    if (response.data) {
-                        this.setState({
-                            restaurantImageIds: response.data
-                        });
-                    }
-                    console.log("Fetching restaurant image ids success!", this.state.restaurantDetails);
-                } else {
-                    console.log("Fetching restaurant image ids failed!");
-                }
-            })
-            .catch((error) => {
-                console.log("Fetching restaurant image ids failed!", error);
-            });
+    getRestprofile(){
+       if (this.props.data && this.props.data.restaurant && !this.state.restaurantDetails) {
+           console.log("I got called");
+           if(!this.state || !this.state.restaurantDetails){
+            this.getRestprofile();
+        }
+       }
     }
 
-    getRestaurantProfile = () => {
-        var restaurantId = localStorage.getItem("restaurant_id");
-        console.log("Fetching the details for restaurantId ", restaurantId);
-    
-
-        axios.get(`${backend}/restaurants/${restaurantId}`)
-            .then(response => {
-                console.log("Status Code : ",response.status, "Response JSON : ",response.data);
-                if (response.status === 200) {
-                    if (response.data) {
-                        this.setState({
-                            restaurantDetails: response.data
-                        });
-                    }
-                    console.log("Fetching restaurant details success!", this.state.restaurantDetails);
-                } else {
-                    console.log("Fetching restaurant details failed!");
-                }
-            })
-            .catch((error) => {
-                console.log("Fetching restaurant details failed!", error);
-            });
-    }
-
-    getImageCarouselItem = (imageId) => {
-        let rest_id = localStorage.getItem("restaurant_id");
-        let imageSrcUrl = `${backend}/restaurants/${rest_id}/images/${imageId}`;
-        console.log(imageSrcUrl);
-        return <Carousel.Item>
-            <img
-            style = {{width:'60rem', height:'40rem'}}
-            src={imageSrcUrl}
-            alt="First slide"
-            />
-        </Carousel.Item>
+    componentWillMount() {
+        this.getRestprofile();
     }
 
     render() {
         var restaurantDetailsTable = null;
         let redirectVar = null;
-        let carouselList = [], carousel;
 
-        if(!(cookie.load('cookie') && localStorage.getItem("restaurant_id"))){
-            redirectVar = <Redirect to="/" />;
+        if(!this.state || !this.state.restaurantDetails){
+            this.getRestprofile();
         }
 
-        if (this.state && this.state.restaurantImageIds && this.state.restaurantImageIds[0]) {
-            for (var i = 0; i < this.state.restaurantImageIds.length; i++) {
-                carousel = this.getImageCarouselItem(this.state.restaurantImageIds[i]);
-                carouselList.push(carousel);
-            }
-        } else {
-            carousel = <Carousel.Item>
-                            <img
-                            style = {{width:'30rem', height:'20rem'}}
-                            src={yelp_logo}
-                            alt="First slide"
-                            />
-                        </Carousel.Item>
-            carouselList.push(carousel);
+        if(!localStorage.getItem("restaurant_id")) {
+            redirectVar = <Redirect to="/home" />;
         }
-        console.log(carouselList);
 
         if(this.state.restaurantDetails) {
             restaurantDetailsTable = (<center>
@@ -120,12 +50,7 @@ class RestaurantHome extends Component {
                         <h1>{this.state.restaurantDetails.name}</h1>
                     </Card.Title>
 
-                    <Carousel>
-                        {carouselList}
-                    </Carousel>
-                    <br/><br/>
-                    </Col>
-                    <Col>
+                    
                     <Card.Body>
                         <Table style={{ width: "100%", fontSize:"18px" }}>
                             <tbody>
@@ -187,4 +112,8 @@ class RestaurantHome extends Component {
     }
 }
 
-export default RestaurantHome;
+export default graphql(getRestaurantQuery, {
+    name: "data",
+    options: { variables: { restaurant_id: localStorage.getItem("restaurant_id") }
+    }
+})(RestaurantHome);

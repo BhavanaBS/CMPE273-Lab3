@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import '../../App.css';
-import cookie from 'react-cookies';
 import { Redirect } from 'react-router';
 import { customerLoginMutation } from "../../mutation/mutations";
-import { Link } from 'react-router-dom';
 import { graphql } from 'react-apollo';
 const jwt_decode = require('jwt-decode');
 
@@ -61,10 +59,10 @@ class CustomerLogin extends Component {
             localStorage.setItem("customer_id", decoded.customer_id);
             redirectVar = <Redirect to="/c_home" />
         }            
-        else if (this.state.message === "NO_USER" && this.state.loginFlag) {
+        else if (this.state.message === "NO_CUSTOMER" && this.state.loginFlag) {
             error = "Please Register to continue";
         }
-        else if (this.state.message === "INCORRECT_PASSWORD" && this.state.loginFlag) {
+        else if (this.state.message === "INVALID_CUSTOMER_CREDENTIALS" && this.state.loginFlag) {
             error = "Incorrect Password";
         }
 

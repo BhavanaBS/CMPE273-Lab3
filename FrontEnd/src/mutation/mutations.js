@@ -36,4 +36,15 @@ mutation RestaurantLogin($email_id: String, $password: String){
 }
 `;
 
-export { addCustomerMutation, addRestaurantMutation, customerLoginMutation, restaurantLoginMutation, };
+const restaurantUpdateMutation = gql`
+mutation RestaurantUpdate($email_id: String, $name: String, $location: String,
+     $phone: String, $description: String, $timings: String, $cuisine: String, $delivery_method: String){
+    restaurantUpdate(email_id: $email_id, location: $location, name: $name,
+        phone: $phone, description: $description, timings: $timings, cuisine: $cuisine, delivery_method: $delivery_method){
+        message
+        status
+    }
+}
+`;
+
+export { addCustomerMutation, addRestaurantMutation, customerLoginMutation, restaurantLoginMutation, restaurantUpdateMutation};

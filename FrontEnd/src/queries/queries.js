@@ -1,17 +1,19 @@
 import { gql } from 'apollo-boost';
 
-const getRestaurantsQuery = gql`
-    query($input: String){
-        restaurants(input: $input) {
-            res_name
-            res_cuisine
-            res_address
-            res_phone_number
-            res_zip_code
-            owner_user_id
+const getRestaurantQuery = gql`
+    query($restaurant_id: String){
+        restaurant(restaurant_id: $restaurant_id) {
+            name
+            email_id
+            location
+            delivery_method
+            phone
+            description
+            timings
+            cuisine
         }
     }
 `;
 
 
-export { getRestaurantsQuery };
+export { getRestaurantQuery };

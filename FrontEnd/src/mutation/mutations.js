@@ -62,6 +62,28 @@ mutation CustomerUpdate($email_id: String, $name: String, $phone: String,
 }
 `;
 
+const addReviewMutation = gql`
+mutation AddReview($restaurant_id: String, $rating: String, $review: String){
+    addReview(restaurant_id: $restaurant_id, rating: $rating, review: $review){
+        message
+        status
+    }
+}
+`;
+
+const createOrderMutation = gql`
+mutation CreateOrder($restaurant_id: String, $delivery_method: String, $dish_name: String,
+    $customer_id: String, $quantity: Int, $restaurant_name: String){
+    createOrder(restaurant_id: $restaurant_id, customer_id: $customer_id, delivery_method: $delivery_method,
+        dish_name: $dish_name, quantity: $quantity, restaurant_name: $restaurant_name){
+        message
+        status
+    }
+}
+`;
+
 export { addCustomerMutation, addRestaurantMutation, 
     customerLoginMutation, restaurantLoginMutation, 
-    customerUpdateMutation, restaurantUpdateMutation};
+    customerUpdateMutation, restaurantUpdateMutation,
+    addReviewMutation,
+    createOrderMutation};

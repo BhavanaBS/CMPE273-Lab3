@@ -3,96 +3,68 @@
 // 3. Order food from the page, select delivery method.
 
 import React, { Component } from 'react';
-import { Card, Container, ListGroup, Row, Col, Form, Button, ButtonGroup, Carousel } from "react-bootstrap";
-import axios from 'axios';
+import { Card, Container, ListGroup, Row, Col, Form, Button, ButtonGroup, Alert } from "react-bootstrap";
+import { addReviewMutation } from "../../mutation/mutations";
+import { graphql } from 'react-apollo';
 import CustomerMenuDish from './CustomerMenuDish';
-import yelp_logo from "../../images/yelp_logo.png";
-import backend from '../common/serverDetails';
+import { Redirect } from 'react-router';
 
 class CustomersRestaurantView extends Component {
     constructor(props) {
         super(props);
         this.setState({
             categories: ["Main Course", "Salads", "Appetizer", "Desserts", "Beverages"],
-            errorReviewFlag:false,
-            successReviewFlag:false,
         });
-        this.onReviewSubmit = this.onReviewSubmit.bind(this);
-        this.getRestaurantImageIds();
     }
 
     componentWillMount () {
         this.setState({
             resData: this.props.location.state,
-            reviews: {
-            },
             categories: ["Main Course", "Salads", "Appetizer", "Desserts", "Beverages"]
         });
-        this.getDishes(this.props.location.state.id);
     }
 
-    getDishes = (rest_id) => {
-        axios.get(`${backend}/restaurants/${rest_id}/dishes`)
-            .then(response => {
-                if (response.data[0]) {
-                    this.setState({
-                        dishes: response.data
-                    });
-                }
-            })
-            .catch(err => {
-                if (err.response && err.response.data) {
-                    console.log(err.response.data);
-                }
-            });
-    };
-
-    onReviewSubmit = (e) => {
-        //prevent page from refresh
-        e.preventDefault();
-        console.log("on update");
-        let data = Object.assign({}, this.state.reviews, {rest_id: this.state.resData.id});
-        axios.defaults.withCredentials = true;
-        //make a post request with the user data
-        axios.post(`${backend}/customers/${localStorage.getItem("customer_id")}/reviews`, data)
-            .then(response => {
-                console.log("Review Creation Status : ",response.status, "Response JSON : ",response.data);
-                if (response.status !== 200) {
-                    this.setState({
-                        errorReviewFlag : true,
-                        successReviewFlag : false,
-                    });
-                } else if (response.status === 200) {
-                    this.setState({
-                        errorReviewFlag : false,
-                        successReviewFlag : true,
-                    });
-                }
-            })
-            .catch((error) => {
-                console.log("Review Creation Failed!", error);
-                this.setState({
-                    errorReviewFlag : true,
-                });
-            });
-    };
-
-    onReviewChange = e => {
-        let newReview = Object.assign({}, this.state.reviews, {[e.target.name]:  e.target.value});
+    onChange = (e) => {
         this.setState({
-            reviews: newReview,
+            [e.target.name]: e.target.value
+        })
+    }
+
+    onSubmit = async (e) => {
+        e.preventDefault();
+        let mutationResponse = await this.props.addReviewMutation({
+            variables: {
+                restaurant_id: this.state.resData.id,
+                rating: this.state.rating,
+                review: this.state.review,
+            }
         });
-    };
+        let response = mutationResponse.data.addReview;
+        if (response) {
+            if (response.status === "200") {
+                this.setState({
+                    success: true,
+                    data: response.message,
+                    addReviewFlag: true
+                });
+            } else {
+                this.setState({
+                    message: response.message,
+                    addReviewFlag: true
+                });
+            }
+        }
+    }
 
     dishesView = (category) => {
         var categoriesView = [], dishes, dish, categoryHtml;
-        if (this.state && this.state.dishes && this.state.dishes.length > 0) {
-            dishes = this.state.dishes.filter(dish => dish.category === category);
+        if (this.state && this.state.resData && this.state.resData.rest_dishes && this.state.resData.rest_dishes.length > 0) {
+            dishes = this.state.resData.rest_dishes.filter(dish => dish.category === category);
             if (dishes.length > 0) {
                 categoryHtml = <h4>{category}</h4>;
                 categoriesView.push(categoryHtml);
                 for (var i = 0; i < dishes.length; i++) {
-                    dish = <CustomerMenuDish dish={dishes[i]} deleteDish={this.deleteDish}/>;
+                    dish = <CustomerMenuDish dish={dishes[i]} deleteDish={this.deleteDish} resData={this.state.resData}/>;
                     categoriesView.push(dish);
                 }
             }
@@ -100,73 +72,16 @@ class CustomersRestaurantView extends Component {
         }
     };
 
-    getRestaurantImageIds = () => {
-        console.log("Fetching the imageIds for restaurantId ", this.props.location.state.id);
-
-        axios.get(`${backend}/restaurants/${this.props.location.state.id}/images`)
-            .then(response => {
-                console.log("Status Code : ",response.status, "Response JSON : ",response.data);
-                if (response.status === 200) {
-                    if (response.data) {
-                        this.setState({
-                            restaurantImageIds: response.data
-                        });
-                    }
-                    console.log("Fetching restaurant image ids success!", this.props.location.state.id);
-                } else {
-                    console.log("Fetching restaurant image ids failed!");
-                }
-            })
-            .catch((error) => {
-                console.log("Fetching restaurant image ids failed!", error);
-            });
-    }
-    
-    getImageCarouselItem = (imageId) => {
-        let imageSrcUrl = `${backend}/restaurants/${this.props.location.state.id}/images/${imageId}`;
-        console.log(imageSrcUrl);
-        return <Carousel.Item style = {{width:'20rem', height:'20rem'}}>
-            <img
-            style = {{width:'20rem', height:'20rem'}}
-            src={imageSrcUrl}
-            alt="First slide"
-            />
-        </Carousel.Item>
-    }
-
     render() {
 
         let restaurantDetails = null;
         let reviewForm = null;
         let category, menuRender = [];
-        let carouselList = [], carousel;
-
-        if (this.state && this.state.restaurantImageIds && this.state.restaurantImageIds[0]) {
-            for (var i = 0; i < this.state.restaurantImageIds.length; i++) {
-                carousel = this.getImageCarouselItem(this.state.restaurantImageIds[i]);
-                carouselList.push(carousel);
-            }
-        } else {
-            carousel = <Carousel.Item style = {{width:'20rem', height:'20rem'}}>
-                            <img
-                            style = {{width:'20rem', height:'20rem'}}
-                            src={yelp_logo}
-                            alt="First slide"
-                            />
-                        </Carousel.Item>
-            carouselList.push(carousel);
-        }
-        console.log(carouselList);
 
         if (this.state && this.state.resData) {
             restaurantDetails = 
-                <Card style={{ width: '65rem'}}>
+                <Card style={{ width: '32rem'}}>
                     <Row>
-                        <Col align="left" style = {{ width:'30rem'}}>
-                             <Carousel style = {{margin:'1rem', width:'20rem', height:'20rem'}}>
-                                {carouselList}
-                            </Carousel>  
-                        </Col>
                         <Col align="left">
                             <Card.Body>
                                 <ListGroup horizontal style={{ width: '35rem' }}>
@@ -206,7 +121,7 @@ class CustomersRestaurantView extends Component {
                 <Col></Col>
                 <Col align="right">
                 <br/>
-                    <Form onSubmit={this.onReviewSubmit} align="center" className="justify-content">
+                    <Form onSubmit={this.onSubmit} align="center" className="justify-content">
                         <Form.Row fluid>
                             <Form.Group as={Row} controlId="reviews.rating" >
                                 <Form.Label style={{marginLeft:'10rem'}}>Rating</Form.Label>
@@ -215,8 +130,8 @@ class CustomersRestaurantView extends Component {
                                         type="number"
                                         min="1"
                                         max="5"
-                                        onChange={this.onReviewChange}
-                                        value={this.state.reviews.rating}
+                                        onChange={this.onChange}
+                                        value={this.state.rating}
                                         required={true}
                                         placeholder="Rating" />
                             </Form.Group>
@@ -228,8 +143,8 @@ class CustomersRestaurantView extends Component {
                                     <textarea
                                         name="review"
                                         type="box"
-                                        onChange={this.onReviewChange}
-                                        value={this.state.reviews.review}
+                                        onChange={this.onChange}
+                                        value={this.state.review}
                                         pattern="^[A-Za-z0-9. ]+$"
                                         required={true}
                                         placeholder="Please write a Review" 
@@ -257,24 +172,30 @@ class CustomersRestaurantView extends Component {
             }
         }
 
-        let reviewSubmissionStatus;
-        if(this.state && this.state.successReviewFlag) {
-            reviewSubmissionStatus = <div style={{marginLeft:'5rem'}}>
-            <p style={{color:"green"}}>
-            Review Submitted Successfully!
-            </p>
-            </div>
+        let redirectVar = null, error = "" , success= "";
+        if (localStorage.getItem("customer_id") === null ) {
+            redirectVar = <Redirect to="/r_home" />
         }
-        if(this.state && this.state.errorReviewFlag) {
-            reviewSubmissionStatus = <div style={{marginLeft:'5rem'}}>
-            <p style={{color:"red"}}>
-            Review Submit Failed!
-            </p>
-            </div>
+
+        if (this.state.success) {
+            success = (
+                        <div>
+                            <Alert variant="success">Review added successfully!</Alert>
+                        </div>
+                    );
+            // success = "Profile Updated Successfully";
+        }   
+        else if (this.state.message === "INTERNAL_SERVER_ERROR" && this.state.updateFlag) {
+            error = (
+                <div>
+                    <Alert variant="danger">Review add failed. Please try again in some time.</Alert>
+                </div>
+                );
         }
 
         return(
             <Container fluid max-width='100%'>
+            {redirectVar}
             <br/><br/>
             <center><h2>{this.state.resData.name} Restaurant Page</h2>
             <br/><br/>
@@ -290,11 +211,12 @@ class CustomersRestaurantView extends Component {
                 <h3> <center>Review Restaurant</center></h3>
                 <br/>
                 {reviewForm}
-                {reviewSubmissionStatus}                
-                <center><Button href="/customer/home">Home</Button></center>
+                <br/>
+                {success} 
+                {error}               
             </Container>
         )
     }
 }
 
-export default CustomersRestaurantView;
+export default graphql(addReviewMutation, { name: "addReviewMutation" })(CustomersRestaurantView);

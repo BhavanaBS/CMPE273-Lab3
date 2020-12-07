@@ -8,8 +8,9 @@ const orderSchema = new Schema({
   status: { type: String, required: true },
   create_time: { type: String, required: true },
   delivery_method: { type: String, required: true },
-  dish_name:{ type: Schema.ObjectId, ref: 'dish', required: true },
+  dish_name:{ type: String, required: true },
   quantity: { type: Number, required: true },
+  restaurant_name:{ type: String, required: true },
 },
 {
   versionKey: false,

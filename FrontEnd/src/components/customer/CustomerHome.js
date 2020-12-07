@@ -14,7 +14,6 @@ class CustomerHome extends Component {
     constructor(props) {
         super(props);
         this.setState({
-            search_variable: ".",
             noRecord: false
         });
         this.restSearch = this.restSearch.bind(this);
@@ -56,6 +55,18 @@ class CustomerHome extends Component {
 
     onSearchSubmit = (e) => {
         e.preventDefault();
+        var listFiltered = [];
+        var searchInput = this.state.search_variable+"";
+        var searchInputLower = searchInput.toLowerCase();
+        console.log(this.state.restaurantsInYelp[0])
+        for (var i = 0; i < this.state.restaurantsInYelp.length; i++) {
+            if(this.state.restaurantsInYelp[i].name.toLowerCase().includes(searchInputLower)) {
+                listFiltered.push(this.state.restaurantsInYelp[i]);
+            }
+        }
+        this.setState({
+            restaurantsToDisplay: listFiltered
+        });
     }
 
     onLocationSelect = (e) => {
@@ -157,6 +168,6 @@ class CustomerHome extends Component {
 
 export default graphql (getRestaurantsQuery, {
     name: "data",
-    options: { variables: { input: this.state ? this.state.search_variable : "." }
+    options: { variables: { input: "." }
     }
 }) (CustomerHome);

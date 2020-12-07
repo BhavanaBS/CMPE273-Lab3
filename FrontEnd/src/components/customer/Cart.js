@@ -4,15 +4,14 @@
 
 import React, { Component } from 'react';
 import { Alert, Table, Button, Dropdown, Modal } from "react-bootstrap";
-import axios from 'axios';
-import backend from '../common/serverDetails';
+import { Redirect } from 'react-router';
+import { createOrderMutation } from "../../mutation/mutations";
+import { graphql } from 'react-apollo';
 
 class Cart extends Component {
     constructor(props) {
         super(props);
         this.setState({
-            successFlag : false,
-            errorFlag : false,
             deliveryMethod : "Home Delivery"
         });
     }
@@ -45,47 +44,44 @@ class Cart extends Component {
                 </tr>;
     }
 
-    placeOrder = () => {
+    placeOrder = async () => {
         console.log("Order Submit Call");
-
-        axios.defaults.withCredentials = true;
-        //make a post request with the user data
-        let data = Object.assign({}, {rest_id: this.state.cart_restaurant_id, cust_id: localStorage.getItem("customer_id"), delivery_method: this.state.deliveryMethod},{dishes:this.state.dishes_in_cart});
-        axios.post(`${backend}/orders`, data)
-            .then(response => {
-                console.log("Order Creation Status : ",response.status, "Response JSON : ",response.data);
-                if (response.status !== 200) {
-                    this.setState({
-                        errorFlag : true,
-                        successFlag : false,
-                    });
-                } else if (response.status === 200) {
-                    this.setState({
-                        errorFlag : false,
-                        successFlag : true,
-                    });
-                    localStorage.setItem("dishes_in_cart", "");
-                    localStorage.setItem("cart_restaurant_id", "");
-                }
-            })
-            .catch((error) => {
-                console.log("Order Creation Failed!", error);
+        let mutationResponse = await this.props.createOrderMutation({
+            variables: {
+                restaurant_id: localStorage.getItem("cart_restaurant_id"),
+                customer_id: localStorage.getItem("customer_id"),
+                delivery_method: this.state.deliveryMethod,
+                dish_name: this.state.dishes_in_cart[0].dish_name,
+                quantity: this.state.dishes_in_cart[0].dish_quantity,
+                restaurant_name: localStorage.getItem("cart_restaurant_name"),
+            }
+        });
+        let response = mutationResponse.data.createOrder;
+        if (response) {
+            if (response.status === "200") {
                 this.setState({
-                    errorFlag : true,
-                    successFlag : false,
+                    success: true,
+                    data: response.message,
+                    placeOrderFlag: true
                 });
-            });
+            } else {
+                this.setState({
+                    message: response.message,
+                    placeOrderFlag: true
+                });
+            }
+        }
     }
 
     render() {
 
         let dishes = [], dishesInCart, dish, message, submitButton, deliveryMethod, successModal;
 
-        if(this.state && this.state.errorFlag) {
+        if(this.state && this.state.placeOrderFlag && this.state.message) {
             message = <div>
                         <p style={{ color: "red" }}> Failed to place an Order. Please retry.</p>
                     </div>
-        } else if(this.state && this.state.successFlag) {
+        } else if(this.state && this.state.placeOrderFlag && this.state.data && this.state.data==='ORDER_PLACED') {
             message = <div>
                     <p style={{ color: "green" }}> Order Successfully Placed.</p>
                     </div>;
@@ -162,10 +158,11 @@ class Cart extends Component {
                 <br/>
                 {submitButton}
                 <center>
-                    <Button href="/customer/home">Home</Button>
+                    <Button href="/c_home">Home</Button>
                 </center>
             </div>
         )
     }
 }
-export default Cart;
+
+export default graphql(createOrderMutation, { name: "createOrderMutation" })(Cart);

@@ -65,4 +65,18 @@ const getRestaurantsQuery = gql`
     }
 `;
 
-export { getRestaurantQuery, getCustomerQuery, getRestaurantsQuery};
+const getCustomerOrdersQuery = gql`
+    query($customer_id: String){
+        customerOrders(customer_id: $customer_id) {
+            status
+            create_time
+            delivery_method
+            dish_name
+            quantity
+            restaurant_name
+        }
+    }
+`;
+
+export { getRestaurantQuery, getCustomerQuery, getRestaurantsQuery,
+    getCustomerOrdersQuery};

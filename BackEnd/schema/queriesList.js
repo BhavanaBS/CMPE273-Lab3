@@ -103,3 +103,28 @@
 //     }
 //   }
   
+// query{
+//     restaurant(restaurant_id: "5f98f45286232a79557013c5") {
+//       name
+//       email_id
+//       location
+//       delivery_method
+//       phone
+//       description
+//       timings
+//       cuisine
+//       __typename
+//     }
+//   }
+
+// query{
+//     customerOrders(customer_id: "5f8e81eca5b8ff52e61d1af5") {
+//       id
+//       status
+//       create_time
+//       delivery_method
+//       dish_name
+//       quantity
+//       restaurant_id
+//     }
+//   }

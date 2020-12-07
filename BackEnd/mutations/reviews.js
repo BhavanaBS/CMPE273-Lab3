@@ -11,7 +11,7 @@ const addReview = async (args) => {
         };
 
         restaurant.reviews.push(new_review);
-        let added = await user.save();
+        let added = await restaurant.save();
         if (added) {
             return { status: 200, message: "REVIEW_ADDED" };
         }
@@ -23,3 +23,5 @@ const addReview = async (args) => {
         return { status: 500, message: "INTERNAL_SERVER_ERROR" };
     }
 };
+
+exports.addReview = addReview;

@@ -164,21 +164,14 @@ const RootQuery = new GraphQLObjectType({
       type: new GraphQLList(RestaurantType),
       args: { input: { type: GraphQLString } },
       async resolve(parent, args) {
-        const restaurants = await Restaurant.find();
+        const restaurants = await Restaurant.find({name: {$regex :args.input}});
+        // const restaurants = await Restaurant.find();
+
         if (restaurants) {
           return restaurants;
         }
       },
     },
-
-    // Check if i can write restaurant search query here
-    // restaurants: {
-    //     type: new GraphQLList(RestaurantType),
-    //     args: { input: { type: GraphQLString } },
-    //     async resolve(parent, args) {
-    //         return restaurantSearch(args);
-    //     }
-    // },
 
     menu: {
       type: new GraphQLList(RestDishType),
@@ -192,17 +185,17 @@ const RootQuery = new GraphQLObjectType({
       },
     },
 
-    // dish: {
-    //   type: new GraphQLList(RestDishType),
-    //   args: { restaurant_id: { type: GraphQLString }, dish_id: { type: GraphQLString } },
-    //   async resolve(parent, args) {
-    //     const restaurant = await Restaurant.findById({ _id: args.restaurant_id });
-    //     if (restaurant) {
-    //       const menu = restaurant.rest_dishes;
-    //       return menu;
-    //     }
-    //   },
-    // },
+    dish: {
+      type: new GraphQLList(RestDishType),
+      args: { restaurant_id: { type: GraphQLString }, dish_id: { type: GraphQLString } },
+      async resolve(parent, args) {
+        const restaurant = await Restaurant.find({ _id: args.restaurant_id, _id });
+        if (restaurant) {
+          const menu = restaurant.rest_dishes;
+          return menu;
+        }
+      },
+    },
 
     reviews: {
       type: new GraphQLList(ReviewType),
@@ -304,6 +297,7 @@ const Mutation = new GraphQLObjectType({
         favourite_restaurant: { type: GraphQLString },
         favourite_hobby: { type: GraphQLString },
         blog_url: { type: GraphQLString },
+        email_id: { type: GraphQLString },
       },
       resolve(parent, args) {
         return customerUpdate(args);
@@ -320,6 +314,7 @@ const Mutation = new GraphQLObjectType({
         timings: { type: GraphQLString },
         cuisine: { type: GraphQLString },
         delivery_method: { type: GraphQLString },
+        email_id: { type: GraphQLString },
       },
       resolve(parent, args) {
         return restaurantUpdate(args);

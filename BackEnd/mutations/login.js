@@ -6,8 +6,11 @@ const { secret } = require('../config/config');
 
 const restaurantLogin = async (args) => {
     let restaurant = await Restaurant.findOne({ email_id: args.email_id });
+    if (!restaurant) {
+        return { status: 401, message: "NO_RESTAURANT" };
+    }
     if (restaurant.length === 0) {
-        return { status: 401, message: "NO_USER" };
+        return { status: 401, message: "NO_RESTAURANT" };
     }
     if (passwordHash.verify(args.password, restaurant.password)) {
         const payload = { restaurant_id: restaurant._id };
@@ -24,8 +27,11 @@ const restaurantLogin = async (args) => {
 
 const customerLogin = async (args) => {
     let customer = await Customer.findOne({ email_id: args.email_id });
+    if (!customer) {
+        return { status: 401, message: "NO_CUSTOMER" };
+    }
     if (customer.length === 0) {
-        return { status: 401, message: "NO_USER" };
+        return { status: 401, message: "NO_CUSTOMER" };
     }
     if (passwordHash.verify(args.password, customer.password)) {
         const payload = { customer_id: customer._id };

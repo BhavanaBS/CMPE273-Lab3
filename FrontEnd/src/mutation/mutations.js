@@ -91,8 +91,20 @@ mutation UpdateOrder($order_id: String, $status: String){
 }
 `;
 
+const addDishMutation = gql`
+mutation AddDish($restaurant_id: String, $name: String, $ingredients: String, $price: String, 
+    $category: String, $description: String){
+    addDish(restaurant_id: $restaurant_id, name: $name, ingredients: $ingredients, price: $price, 
+        category: $category, description: $description){
+        message
+        status
+    }
+}
+`;
+
 export { addCustomerMutation, addRestaurantMutation, 
     customerLoginMutation, restaurantLoginMutation, 
     customerUpdateMutation, restaurantUpdateMutation,
     addReviewMutation,
-    createOrderMutation, updateOrderMutation};
+    createOrderMutation, updateOrderMutation,
+    addDishMutation};

@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Card, Button, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import dishImage from "../../images/dishImage.jpg";
 
 class Dish extends Component {
 
@@ -10,16 +11,16 @@ class Dish extends Component {
 }
 
   render() {
-//   <img
-//   style = {{width:'15rem', height:'15rem'}}
-//   src={yelp_logo}
-//   alt="First slide"
-//   />
+
     return (
       <Card bg="light" style={{width:'40rem', height:'15rem'}}>
         <Row>
           <Col  align="left" style={{width:'15rem', height:'15rem'}}>
-            
+          <img
+                style = {{width:'13rem', height:'13rem'}}
+                src={dishImage}
+                alt="First slide"
+                />
           </Col>
           <Col align="left" style={{width:'20rem', height:'15rem'}}>
             <Card.Body>

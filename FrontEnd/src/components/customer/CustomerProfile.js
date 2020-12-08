@@ -34,7 +34,7 @@ class CustomerProfile extends Component {
     }
 
     getCustProfile(){
-        if (this.props.data && this.props.data.customer && !this.state.customerDetails) {
+        if (this.props.data && this.props.data.customer && this.state && !this.state.customerDetails) {
             console.log("I got called");
              this.setState({ 
                 customerDetails: this.props.data.customer,

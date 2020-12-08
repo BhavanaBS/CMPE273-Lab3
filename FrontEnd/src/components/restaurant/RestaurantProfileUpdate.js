@@ -20,7 +20,7 @@ class RestaurantProfile extends Component {
     }
 
     getRestprofile(){
-        if (this.props.data && this.props.data.restaurant && !this.state && !this.state.restaurantDetails) {
+        if (this.props.data && this.props.data.restaurant && this.state && !this.state.restaurantDetails) {
             console.log("I got called");
              this.setState({ 
                 restaurantDetails: this.props.data.restaurant,
@@ -78,9 +78,7 @@ class RestaurantProfile extends Component {
             redirectVar = <Redirect to="/c_home" />
         }
 
-        if(!this.state.restaurantDetails){
             this.getRestprofile();
-        }
 
         if (this.state.success) {
             success = (

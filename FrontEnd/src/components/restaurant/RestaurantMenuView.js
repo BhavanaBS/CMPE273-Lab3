@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Container, Alert } from "react-bootstrap";
 import Dish from "./Dish";
+import { getRestaurantMenuQuery } from "../../queries/queries";
+import { graphql } from 'react-apollo';
 
 class RestaurantMenuView extends Component {
     constructor(props) {
@@ -18,15 +20,18 @@ class RestaurantMenuView extends Component {
     }
 
     getDishes = () => {
-        let rest_id = localStorage.getItem("restaurant_id");
-        
-        
+        if (this.props.data && this.props.data.menu && !this.state.restaurantMenu) {
+            console.log("I got called");
+             this.setState({ 
+                restaurantMenu: this.props.data.menu,
+            });
+        }        
     };
 
     dishesView = (category) => {
         var categoriesView = [], dishes, dish, categoryHtml;
-        if (this.state && this.state.dishes && this.state.dishes.length > 0) {
-            dishes = this.state.dishes.filter(dish => dish.category === category);
+        if (this.state && this.state.restaurantMenu && this.state.restaurantMenu.length > 0) {
+            dishes = this.state.restaurantMenu.filter(dish => dish.category === category);
             if (dishes.length > 0) {
                 categoryHtml = <h3><br/>{category}</h3>;
                 categoriesView.push(categoryHtml);
@@ -44,11 +49,9 @@ class RestaurantMenuView extends Component {
             category,
             menuRender = [];
 
-        if (this.state && this.state.message) {
-            message = <Alert variant="warning">{this.state.message}</Alert>;
-        }
+        this.getDishes();
 
-        if (this.state && !this.state.dishes) {
+        if (this.state && !this.state.restaurantMenu) {
             message = <Alert variant="warning">Dishes not added to the menu yet</Alert>;
         }
         
@@ -64,11 +67,14 @@ class RestaurantMenuView extends Component {
                 <br />
                 <center><h2>Menu</h2></center>
                 {message}
-
                 {menuRender}
             </Container>
         );
     }
 }
 
-export default RestaurantMenuView;
+export default graphql(getRestaurantMenuQuery, {
+    name: "data",
+    options: { variables: { restaurant_id: localStorage.getItem("restaurant_id") }
+    }
+})(RestaurantMenuView);

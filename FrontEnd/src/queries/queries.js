@@ -102,5 +102,19 @@ query($restaurant_id: String){
 }
 `;
 
+const getRestaurantMenuQuery = gql`
+query($restaurant_id: String){
+    menu(restaurant_id: $restaurant_id) {
+        name
+        id
+        ingredients
+        description
+        price
+        category
+    }
+}
+`;
+
 export { getRestaurantQuery, getCustomerQuery, getRestaurantsQuery,
-    getCustomerOrdersQuery, getReviewsQuery, getRestaurantOrdersQuery};
+    getCustomerOrdersQuery, getReviewsQuery, getRestaurantOrdersQuery,
+    getRestaurantMenuQuery};

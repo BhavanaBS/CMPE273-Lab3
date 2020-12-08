@@ -1,9 +1,8 @@
-// 4. Add/Edit Dishes in menu (with Dish name, Main Ingredients, Dish Images, Dish Price,
-// description, dish category – Appetizer, Salads, Main Course , Desserts, Beverages)
-// 5. View list of dishes added by them.
-
 import React, { Component } from 'react';
 import { Form, Col, Row, Button } from "react-bootstrap";
+import { addDishMutation } from "../../mutation/mutations";
+import { graphql } from 'react-apollo';
+import { Redirect } from 'react-router';
 
 class RestaurantMenuAdd extends Component {
     constructor(props) {
@@ -21,37 +20,55 @@ class RestaurantMenuAdd extends Component {
         });
     };
 
-    onSubmit = e => {
+    onSubmit = async e => {
         e.preventDefault();
-        const data = {
-            rest_id: localStorage.getItem("restaurant_id"),
-            name: this.state.name,
-            ingredients: this.state.ingredients,
-            description: this.state.description,
-            price: this.state.price,
-            category: this.state.category,
-        };
+        let mutationResponse = await this.props.addDishMutation({
+            variables: {
+                restaurant_id: localStorage.getItem("restaurant_id"),
+                name: this.state.name,
+                ingredients: this.state.ingredients,
+                description: this.state.description,
+                price: this.state.price,
+                category: this.state.category,
+            }
+        });
+        let response = mutationResponse.data.addDish;
+        if (response) {
+            if (response.status === "200") {
+                this.setState({
+                    success: true,
+                    data: response.message,
+                    addDishFlag: true
+                });
+            } else {
+                this.setState({
+                    message: response.message,
+                    addDishFlag: true
+                });
+            }
+        }
     };
 
-    
-
     render() {
-        var errorMessage = null;
-        if(this.state && this.state.errorFlag) {
+
+        let redirectVar = null, errorMessage = null;
+        if (this.state && this.state.success) {
+            errorMessage = (<div>
+                    <p style={{ color: "green" }}>Dish Creation Success!</p>
+                </div>
+            );
+        }            
+        else if (this.state && this.state.message === "INTERNAL_SERVER_ERROR" && this.state.addDishFlag) {
             errorMessage = (
                 <div>
                     <p style={{ color: "red" }}>Dish Creation Failed!</p>
                 </div>
-            )
-        } else if(this.state && this.state.successFlag) {
-                errorMessage = (
-                    <div>
-                        <p style={{ color: "green" }}>Dish Created!</p>
-                    </div>
-                )
+            );
         }
+
         return(
             <div>
+            {redirectVar}
             <center> <h3>Add A Dish</h3><br /></center> 
                 <Row>
                     <Col>                       
@@ -111,4 +128,4 @@ class RestaurantMenuAdd extends Component {
     }
 }
 
-export default RestaurantMenuAdd;
+export default graphql(addDishMutation, { name: "addDishMutation" })(RestaurantMenuAdd);

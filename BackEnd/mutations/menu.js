@@ -22,6 +22,7 @@ const getDish = async (args) => {
 };
 
 const addDish = async (args) => {
+    console.log(args.restaurant_id)
     let restaurant = await Restaurant.findById(args.restaurant_id);
     if (restaurant) {
         let newDish = {
@@ -37,10 +38,12 @@ const addDish = async (args) => {
             return { status: 200, message: "DISH_ADDED" };
         }
         else {
+            console.log("I am here")
             return { status: 500, message: "INTERNAL_SERVER_ERROR" };
         }
     }
     else {
+        console.log("or here")
         return { status: 500, message: "INTERNAL_SERVER_ERROR" };
     }
 };
